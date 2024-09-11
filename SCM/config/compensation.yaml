@@ -1,0 +1,97 @@
+min-pay-per-km: 15
+max-pay-per-km: 100
+max-trip-distance-kms: 30
+pickup-canceled:
+  too-big:
+    rider-paid: 10%
+    customer-pays: 10%
+  restricted-item:
+    rider-paid: 20%
+    customer-pays: 20%
+  insufficient-packaging:
+    rider-paid: 10%
+    customer-pays: 10%
+  drop-to-far:
+    rider-paid: 10%
+    customer-pays: 10%
+  pickup-location-embargo:
+    rider-paid: 10%
+    customer-pays: 10%
+  rider-change-of-heart:
+    rider-paid: -20%
+    customer-pays: 0%
+  customer-change-of-heart:
+    rider-paid: 20%
+    customer-pays: 20%
+  rider-not-reachable:
+    rider-paid: -20%
+    customer-pays: 0%
+  pickup-person-not-reachable:
+    rider-paid: 20%
+    customer-pays: 20%
+  other:
+    rider-paid: 0%
+    customer-pays: 0%
+returned:
+  rider-change-of-heart:
+    rider: 50%
+  customer-change-of-heart:
+    customer: 50%
+  too-big:
+    rider: 0%
+    customer: 0%
+  restricted-item:
+    customer: 50%
+  insufficient-packaging:
+    rider: 0%
+    customer: 0%
+  drop-to-far:
+    rider: 0%
+    customer: 0%
+  insufficient-fuel:
+    rider: 20%
+  recipient-not-available:
+    customer: 50%
+  recipient-location-embargo:
+    customer: 50%
+    rider: 0%
+  other:
+    rider: 0%
+    customer: 0%
+drop-canceled:
+  package-lost-in-transit:
+    rider: 200%
+    customer: -200%
+  rider-accident:
+    rider: 200%
+    customer: -200%
+  physical-damage:
+    rider: 200%
+    customer: -100%
+  contents-spilled:
+    rider: 200%
+    customer: -200%
+  water-damage:
+    rider: 200%
+    customer: -200%
+  customer-change-of-heart:
+    customer: 100%
+  rider-not-reachable:
+    rider: 200%
+    customer: -100%
+  other:
+    rider: 200%
+    customer: -100%
+delivered: 
+  physical-damage:
+    rider: 20%
+    customer: -20%
+  contents-spilled:
+    rider: 20%
+    customer: -20%
+  water-damage:
+    rider: 20%
+    customer: -20%
+  other: 
+    rider: 20%
+    customer: -20%

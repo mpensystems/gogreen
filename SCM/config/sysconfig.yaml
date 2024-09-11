@@ -1,0 +1,27 @@
+rider_kyc: true
+paid_trips: false
+require_canceled_cheque: false
+vehicle_kyc: true
+specific_zips: true
+pickup_photo:
+  enable: false
+  mandatory: false
+  storage: "/nfs/filepath"
+drop_photo:
+  enable: false
+  mandatory: false
+  storage: "/nfs/filepath"
+pickup_otp:
+  enable: true
+  text: "{pickup_otp} is your OTP for pickup of package against order {tripId}. Share with rider when parcel is being picked up."
+  dltTemplateId: ""
+drop_otp:
+  enable: true
+  text: "{drop_otp} is your OTP for drop of package against order {tripId}. Share with rider only after receiving your package."
+  dltTemplateId: ""
+exotel:
+  orgId: ""
+  token: ""
+rider_login:
+  text: "Use {rider_login_otp} OTP to login to GoGreen. DO NOT SHARE."
+  dltTemplateId: ""
