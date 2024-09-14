@@ -9,17 +9,20 @@ router.post('/', (req, res) => {
     let booking = req.body.booking;
     let riderLoc = req.body.riderLoc;
 
-    mutex.acquire().then((release) => {
+    mutex.acquire().then(async (release) => {
         //TODO: fetch latest status of the booking and ensure the status is active.
 
         api.post(process.env.SCM_URL + '/v1/unity/get-booking', {bid: booking.bid}).then(currentBookingState => {
             if (currentBookingState.status != 'active') res.status(400).send('ER212');
 
             /**
-             * TODO: CONVERT BOOKING TO TRIP HERE. THIS FUNCTION IS EXECUTED ONE A TIME AND IS THREAD SAFE
+             * TODO: CONVERT BOOKING TO TRIP HERE. THIS FUNCTION IS EXECUTED ONE AT A TIME AND IS THREAD SAFE
              * 
              * 1. Fetch Redis.BookingBids for the specified bid
-             * 2. 
+             * 2. Fetch Mongo.Bookings for the specified bid
+             * 
+             * 3. Create a new trip object
+             * 4. Insert the trip object inside Mongo.Trips
              */
 
             release();
