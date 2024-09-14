@@ -63,7 +63,10 @@ router.post('/', async (req, res) => {
         vehicle_type: rider.vehicle_type,
         is_electric: rider.is_electric,
         fueled_propulsion: rider.fueled_propulsion,
-        vehicle_no: rider.vehicle_no
+        vehicle_no: rider.vehicle_no,
+        kyc_approved: rider.kyc_approved,
+        kyc_error_message: rider.kyc_error_message,
+        created_at: rider.created_at // use for displaying "Members Since" on the app. 
     }});
 })
 
