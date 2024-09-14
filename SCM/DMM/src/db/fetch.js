@@ -34,12 +34,16 @@ const processRedisQuery = async (query) => new Promise((resolve, reject) => {
     let table = query.table;
 
     //run the query on Redis resolve or reject depending on outcome
+
+    resolve([]); //rows of records. Must always be an array in response.
 })
 
 const processMongoQuery = async (query) => new Promise((resolve, reject) => {
     let table = query.table;
 
     //run the query on Mongo and resolve or reject depending on outcome
+
+    resolve([]); //rows of records. Must always be an array in response.
 })
 
 module.exports = {fetch}
