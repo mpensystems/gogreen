@@ -44,5 +44,6 @@ cron.schedule("* * * * *", () => {
  * 1. Delete older route history from Mongo.TripRoute table
  */
 cron.schedule("0 0 * * *", () => {
+    //if EXP != 0 only then delete. This value should be admin configurable
     // delete from Mongo.TripRoute where ended_at < Now() - EXP
 })
