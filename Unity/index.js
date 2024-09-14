@@ -1,5 +1,6 @@
 
 const express = require('express');
+const cron = require('./crons')
 const app = express();
 
 const PORT = process.env.PORT || 8005;
