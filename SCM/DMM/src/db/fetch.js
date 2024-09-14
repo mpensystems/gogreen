@@ -1,4 +1,11 @@
 /**
+ * This file offers generic functions to perform select operations on MongoDB 
+ * and Redis databases depending on the query. 
+ * 
+ * @author Sanket Sarang <sanket@blobcity.com>
+ */
+
+/**
  * Function to fire a generic select query on either Mongo or Redis. 
  * It is capable of running the following conditions:
  * 1. select * from table
@@ -7,8 +14,8 @@
  * 
  * Currently other operators such as > < <> are not supported in the query. Only = is supported.
  * 
- * @param {*} query 
- * @returns 
+ * @param {*} query the query parameter
+ * @returns the result of the select query if the select operation was successful
  */
 
 const fetch = async (query) => new Promise(async (resolve, reject) => {
