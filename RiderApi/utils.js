@@ -41,7 +41,6 @@ const makeid = (length) => {
     return result;
 }
 
-
 module.exports = {
     validateSt,
     makeid
