@@ -2,10 +2,11 @@ var express = require('express');
 var router = express.Router();
 var request = require('request');
 var crypto = require('crypto');
+const utils = require('../../utils');
 
-router.post('/', (req, res) => {
-    let country_code = req.country_code;
-    let mobile = req.mobile;
+router.post('/', async (req, res) => {
+    let country_code = req.body.country_code;
+    let mobile = req.body.mobile;
 
     if(country_code == null || country_code == '') {
         res.status(400).send('ER701');
@@ -19,7 +20,7 @@ router.post('/', (req, res) => {
 
     let otp = '' + (Math.floor(100000 + Math.random() * 900000));
     let otpHash = crypto.createHash('md5').update(otp).digest('hex');
-    let token = makeid(36);
+    let token = utils.makeid(36);
 
     /**
      * TODO:
@@ -29,17 +30,5 @@ router.post('/', (req, res) => {
 
     res.json({token: token});
 })
-
-const makeid = (length) => {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < length) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
-    }
-    return result;
-}
 
 module.exports = router;

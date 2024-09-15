@@ -4,10 +4,11 @@ var request = require('request');
 var crypto = require('crypto');
 const api = require('../../api');
 const URLS = require('../../urls');
+const utils = require('../../utils');
 
 router.post('/', async (req, res) => {
-    let token = req.token;
-    let otp = req.otp;
+    let token = req.body.token;
+    let otp = req.body.otp;
 
     if(token == null || token == '' || otp == null || otp == '') {
         res.status(500).send('ER500');
@@ -31,7 +32,7 @@ router.post('/', async (req, res) => {
         return;
     }
 
-    let st = makeid(64);
+    let st = utils.makeid(64);
     let rid = riderOtpRecords[0].rid;
 
     /**
@@ -69,18 +70,5 @@ router.post('/', async (req, res) => {
         created_at: rider.created_at // use for displaying "Members Since" on the app. 
     }});
 })
-
-const makeid = (length) => {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < length) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
-    }
-    return result;
-}
-
 
 module.exports = router;

@@ -10,6 +10,10 @@ const server = app.listen(PORT, () => {
   console.log(`Rider_Api Service is running on port ${PORT}`);
 });
 
+app.use('/v1/initiate-login', require('./routes/v1/initiate-login'));
+app.use('/v1/validate-otp', require('./routes/v1/validate-otp'));
+app.use('/v1/rider-ws-auth', require('./routes/v1/rider-ws-auth'));
+
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error(`Port ${PORT} is already in use. Please choose a different port.`);

@@ -9,10 +9,10 @@ const utilsRoutes = require('../v1/utilsRoutes');
 // app.use(express.json());
 
 router.use('/utils', utilsRoutes);
-router.use('/v1/rider/accept-booking', require('../v1/rider-api/accept-booking'));
-router.use('/v1/unity/get-booking', require('../v1/unity-api/get-booking'));
-router.use('/v1/db/fetch', require('../v1/db-api/data-fetch'));
-router.use('/v1/db/insert', require('../v1/db-api/insert-data'));
+router.use('/rider/accept-booking', require('../v1/rider-api/accept-booking'));
+router.use('/unity/get-booking', require('../v1/unity-api/get-booking'));
+router.use('/db/fetch', require('../v1/db-api/data-fetch'));
+router.use('/db/insert', require('../v1/db-api/insert-data'));
 
 
 module.exports = router;
