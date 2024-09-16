@@ -1,11 +1,13 @@
 const Booking = require("../../models/Booking");
 const h3 = require("h3-js");
 const axios = require("axios");
+const { processBookingForKafka } = require("../../kafka/kafkaService");
 
 const {
   initializeBidding,
   checkBiddingData,
 } = require("../../controllers/bookingControllers/biddingService");
+const { convertLatLngToH3 } = require("../../utility");
 
 const H3_RESOLUTION = 9;
 
@@ -22,20 +24,38 @@ exports.createBooking = async (req, res) => {
       bidConfig,
     } = req.body;
 
-    console.log("bidconfig to check  : ",bidConfig);
+    console.log("bidconfig to check  : ", bidConfig);
 
-    const pickupH3 = h3.latLngToCell(
-        pickup_location.pickup_geo.coordinates[1],
-        pickup_location.pickup_geo.coordinates[0],
-        H3_RESOLUTION
+    // const pickupH3 = h3.latLngToCell(
+    //   pickup_location.pickup_geo.coordinates[1],
+    //   pickup_location.pickup_geo.coordinates[0],
+    //   H3_RESOLUTION
+    // );
+
+    const pickupH3Result = await convertLatLngToH3(
+      pickup_location.pickup_geo.coordinates[1],
+      pickup_location.pickup_geo.coordinates[0],
+      H3_RESOLUTION
     );
+
 
     // Convert drop latitude and longitude to H3 index
-    const dropH3 = h3.latLngToCell(
-        drop_location.drop_geo.coordinates[1],
-        drop_location.drop_geo.coordinates[0],
-        H3_RESOLUTION
+    // const dropH3 = h3.latLngToCell(
+    //   drop_location.drop_geo.coordinates[1],
+    //   drop_location.drop_geo.coordinates[0],
+    //   H3_RESOLUTION
+    // );
+
+
+    const dropH3Result = await convertLatLngToH3(
+      drop_location.drop_geo.coordinates[1],
+      drop_location.drop_geo.coordinates[0],
+      H3_RESOLUTION
     );
+
+    const pickupH3i = pickupH3Result.h3Index;
+    const dropH3i = dropH3Result.h3Index;
+
 
     console.log(
       "here to check before long",
@@ -47,6 +67,7 @@ exports.createBooking = async (req, res) => {
     );
 
     // Call SCM API to convert pickup and drop lat/lng to H3
+
     // const pickupH3Response = await axios.post(
     //   "http://localhost:8002/v1/utils/convert",
     //   {
@@ -96,17 +117,15 @@ exports.createBooking = async (req, res) => {
 
     // let trip_distance = distanceResponse.data.trip_distance;
 
-
     // Calculate trip_distance
     let trip_distance;
     const hexagonEdgeLengthKm = 0.7;
     const correctionFactor = 0.5;
 
-
-    if (pickupH3 === dropH3) {
+    if (pickupH3i === dropH3i) {
       trip_distance = 200;
     } else {
-      const path = h3.gridPathCells(pickupH3, dropH3);
+      const path = h3.gridPathCells(pickupH3i, dropH3i);
       trip_distance = path.length * hexagonEdgeLengthKm * correctionFactor;
 
       console.log("Estimated Trip Distance:", trip_distance);
@@ -122,7 +141,7 @@ exports.createBooking = async (req, res) => {
     const newBooking = new Booking({
       pickup_location: {
         ...pickup_location,
-        pickup_h3i: pickupH3,
+        pickup_h3i: pickupH3i,
         pickup_geo: {
           type: "Point",
           coordinates: [
@@ -133,7 +152,7 @@ exports.createBooking = async (req, res) => {
       },
       drop_location: {
         ...drop_location,
-        drop_h3i: dropH3, // Add H3 index to drop_location
+        drop_h3i: dropH3i, // Add H3 index to drop_location
         drop_geo: {
           type: "Point",
           coordinates: [
@@ -154,24 +173,41 @@ exports.createBooking = async (req, res) => {
     // Save the booking to the database
     const savedBooking = await newBooking.save();
 
-
-
     // Initialize bidding in Redis using the booking._id as bookingId
+
     await initializeBidding(savedBooking._id.toString(), bidConfig);
 
-    //   check bidding data
+    //   check bidding data --> console
+    
     await checkBiddingData(savedBooking._id.toString());
+
+
+    // Process booking and create Kafka topics
+
+    const radius = 1; // Default radius in km
+    const steps = 5; // Number of steps
+    const stepSize = 200; // Step size in meters
+
+  //  change to radis pub-sub
+   
+    // await processBookingForKafka(
+    //   pickup_location.pickup_geo.coordinates[1], // Latitude
+    //   pickup_location.pickup_geo.coordinates[0], // Longitude
+    //   { ...newBooking.toObject() }, // Booking data to send
+    //   steps,
+    //   stepSize
+    // );
+
 
     res.status(201).json({
       message: "Booking created and bidding initialized successfully",
       data: savedBooking,
     });
   } catch (error) {
-    // console.error('Error creating booking:', error);
     console.error("Error creating booking:");
     res.status(500).json({
       message: "Error creating booking",
-      // error: error.message,
+      error: error.message,
     });
   }
 };

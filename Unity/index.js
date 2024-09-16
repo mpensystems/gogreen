@@ -1,11 +1,19 @@
 
 const express = require('express');
 const app = express();
+const allRoutes = require('./src/routes/index');
+require('dotenv').config();
 
-const PORT = process.env.PORT || 8005;
+const PORT = process.env.PORT || 8000;
+console.log("check port ",process.env.PORT);
+
+app.use(express.json());
+
+
+app.use('/v1', allRoutes);
 
 const server = app.listen(PORT, () => {
-  console.log(`Tracking Api is running on port ${PORT}`);
+  console.log(`Unity Api is running on port ${PORT}`);
 });
 
 server.on('error', (err) => {
