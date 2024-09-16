@@ -34,64 +34,70 @@ pickup-canceled:
     customer-pays: 0%
 returned:
   rider-change-of-heart:
-    rider: 50%
+    rider-paid: -50%
+    customer-pays: 0%
   customer-change-of-heart:
-    customer: 50%
+    rider-paid: 100%
+    customer-pays: 100%
   too-big:
-    rider: 0%
-    customer: 0%
+    rider-paid: 0%
+    customer-pays: 0%
   restricted-item:
-    customer: 50%
+    rider-paid: 0%
+    customer-pays: 0%
   insufficient-packaging:
-    rider: 0%
-    customer: 0%
+    rider-paid: 0%
+    customer-pays: 0%
   drop-to-far:
-    rider: 0%
-    customer: 0%
+    rider-paid: -20%
+    customer-pays: 0%
   insufficient-fuel:
-    rider: 20%
+    rider-paid: -20%
+    customer-pays: 0%
   recipient-not-available:
-    customer: 50%
+    rider-paid: 150%
+    customer-pays: 150%
   recipient-location-embargo:
-    customer: 50%
-    rider: 0%
+    rider-paid: 150%
+    customer-pays: 150%
   other:
-    rider: 0%
-    customer: 0%
+    rider-paid: 0%
+    customer-pays: 0%
 drop-canceled:
   package-lost-in-transit:
-    rider: 200%
-    customer: -200%
+    rider-paid: -200%
+    customer-pays: -200%
   rider-accident:
-    rider: 200%
-    customer: -200%
+    rider-paid: -200%
+    customer-pays: -200%
   physical-damage:
-    rider: 200%
-    customer: -100%
+    rider-paid: -200%
+    customer-pays: -200%
   contents-spilled:
-    rider: 200%
-    customer: -200%
+    rider-paid: -200%
+    customer-pays: -200%
   water-damage:
-    rider: 200%
-    customer: -200%
+    rider-paid: -200%
+    customer-pays: -200%
   customer-change-of-heart:
-    customer: 100%
+    rider-paid: 100%
+    customer-pays: 100%
   rider-not-reachable:
-    rider: 200%
-    customer: -100%
+    rider-paid: -200%
+    customer-pays: -200%
   other:
-    rider: 200%
-    customer: -100%
+    rider-paid: -200%
+    customer-pays: -200%
 delivered: 
   physical-damage:
-    rider: 20%
-    customer: -20%
+    rider-paid: 80%
+    customer-pays: 80%
   contents-spilled:
-    rider: 20%
-    customer: -20%
+    rider-paid: 80%
+    customer-pays: 80%
   water-damage:
-    rider: 20%
-    customer: -20%
+    rider-paid: 80%
+    customer-pays: 80%
   other: 
-    rider: 20%
-    customer: -20%
+    rider: 100%
+    customer: 100%

@@ -1,5 +1,6 @@
 
 const express = require('express');
+const cron = require('./crons')
 const app = express();
 const allRoutes = require('./src/routes/index');
 require('dotenv').config();
