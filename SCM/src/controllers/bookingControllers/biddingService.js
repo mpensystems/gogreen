@@ -91,7 +91,6 @@ const updateBiddingSteps = async (bookingId) => {
                 maxBid: maxBid
             });
 
-
             
             const { current_step: newStep, current_bid: newBid } = response.data;
 
@@ -110,7 +109,7 @@ const updateBiddingSteps = async (bookingId) => {
             await redisClient.hset(biddingKey, 'status', 'canceled');
             console.log(`Bidding ended for booking ${bookingId}`);
             
-            // Add logic to update MongoDB and handle status change
+            // update status
         }
     } catch (error) {
         console.error('Error updating bidding steps:', error);

@@ -1,7 +1,7 @@
 const express = require("express");
 const connectDB = require("../src/db/db.js");
 const cors = require('cors');
-const allRoutes = require('./src/routes/v1/index.js');
+const allRoutes = require('../src/routes/v1/index.js');
 const multer = require('multer');
 
 
@@ -16,6 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const upload = multer();
 app.use(upload.none());
+
 
 
 // const  riderRoutes = require('./routes/v1/rider/riderRoutes.js');

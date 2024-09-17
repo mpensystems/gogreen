@@ -9,6 +9,8 @@ const bookingRoutes = require('../../routes/v1/bookingRoutes');
 
 // app.use(express.json());
 
+
+
 router.use('/rider', riderRoutes);
 router.use('/booking', bookingRoutes);
 

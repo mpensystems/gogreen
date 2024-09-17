@@ -1,7 +1,7 @@
 const Booking = require("../../models/Booking");
 const h3 = require("h3-js");
 const axios = require("axios");
-const { processBookingForKafka } = require("../../kafka/kafkaService");
+const { processBookingForKafka, processBookingForRedis } = require("../../kafka/kafkaService");
 
 const {
   initializeBidding,
@@ -126,6 +126,7 @@ exports.createBooking = async (req, res) => {
       trip_distance = 200;
     } else {
       const path = h3.gridPathCells(pickupH3i, dropH3i);
+      
       trip_distance = path.length * hexagonEdgeLengthKm * correctionFactor;
 
       console.log("Estimated Trip Distance:", trip_distance);
@@ -199,6 +200,26 @@ exports.createBooking = async (req, res) => {
     // );
 
 
+   await processBookingForRedis(
+    pickup_location.pickup_geo.coordinates[1], // Latitude
+      pickup_location.pickup_geo.coordinates[0], // Longitude
+      { ...newBooking.toObject() }, // Booking data to send
+      steps,
+      stepSize
+   )
+
+
+  //  const processBookingForRedis = async (lat, lng, bookingData, steps, stepSize) => {
+  //   const h3Index = convertLatLngToH3(lat, lng, 9);
+  //   for (let i = 0; i < steps; i++) {
+  //     const h3Indices = h3.gridDisk(h3Index, i); // Get H3 indices for each step size (radius)
+  //     for (const index of h3Indices) {
+  //       const channel = `booking-area-${index}`;
+  //       await redis.publish(channel, JSON.stringify(bookingData)); // Publish booking to channel
+  //     }
+  //   }
+  // };
+  
     res.status(201).json({
       message: "Booking created and bidding initialized successfully",
       data: savedBooking,
