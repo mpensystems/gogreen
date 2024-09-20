@@ -8,6 +8,8 @@ const {deleteRider} = require("../../controllers/riderController/dateleRider");
 const {getRider ,getAllRiders} = require("../../controllers/riderController/getRiders");
 const { selectBooking } = require('../../controllers/riderController/selectBooking');
 const { subscribeToRiderChannels } = require('../../kafka/kafkaService');
+const { fetch } = require('../../db/fetch');
+const { insert } = require('../../db/insert');
 
 router.put('/updateRider/:riderId', UpdateRider );
 router.get('/getRider/:riderId',getRider);
@@ -30,6 +32,32 @@ router.post('/subscribe', (req, res) => {
         res.status(500).send('Failed to subscribe to channels.');
       });
   });
+
+
+
+  router.post('/api/fetch-data', async (req, res) => {
+    console.log("req.body : ", req.body);
+    const query = req.body;
+    try {
+      const result = await fetch(query);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching data', details: error.message });
+    }
+  });
+
+
+  router.post('/api/insert-data', async (req, res) => {
+    console.log("req.body : ", req.body);
+    const query = req.body;
+    try {
+      const result = await insert(query);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching data', details: error.message });
+    }
+  });
+  
   
 
 module.exports = router;

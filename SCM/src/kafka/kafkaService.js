@@ -63,6 +63,8 @@ const h3 = require("h3-js");
 
 
 const processBookingForKafka = async (lat, lng, bookingData, steps, stepSize) => {
+  console.log("inside update channesl");
+
   try {
     await connectKafka();
     const h3Index = convertLatLngToH3(lat, lng, 9);
@@ -164,6 +166,7 @@ const processBookingForRedis = async (lat, lng, bookingData, steps, stepSize) =>
     const processedIndices = new Set();
 
     // Process each step to increase the radius and publish booking data
+    // add acoording to the current step
     for (let i = 0; i < steps; i++) {
       const radius = stepSize * (i + 1); // Calculate the radius for this step
       console.log(`Processing radius step ${i + 1} (${radius} meters)`);
@@ -193,6 +196,20 @@ const processBookingForRedis = async (lat, lng, bookingData, steps, stepSize) =>
     console.error('Error processing booking:', error);
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const riderSubscriptions = {};
 
 

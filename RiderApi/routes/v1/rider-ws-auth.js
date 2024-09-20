@@ -26,6 +26,7 @@ router.get('/', async (req, res) => {
     }
 
     //TODO: Insert riderWsAuth in Redis.RiderWsAuth table
+    
 
     res.json({auth: auth});
 })

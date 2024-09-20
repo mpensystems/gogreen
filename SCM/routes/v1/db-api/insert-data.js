@@ -10,8 +10,14 @@ var router = express.Router();
 const dbInsert = require('../../../DMM/src/db/insert');
 
 router.post('/', (req, res) => {
-    let query = req.body;
+    let query = req.body;     
 
+    /*const query = {
+    db:mongo / redis
+    table: booking / rider 
+    rows:[{name:'mukesh' , roll:'Stack} , {name:'mukesh' , roll:'Stack}]
+    
+}*/
     // validate basic format of the query object
     if(query == null
         || !('db' in query)

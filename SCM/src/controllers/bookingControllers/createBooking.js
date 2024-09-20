@@ -8,6 +8,7 @@ const {
   checkBiddingData,
 } = require("../../controllers/bookingControllers/biddingService");
 const { convertLatLngToH3 } = require("../../utility");
+const { biddingAndChannels } = require("../biddingAndChannels");
 
 const H3_RESOLUTION = 9;
 
@@ -176,11 +177,11 @@ exports.createBooking = async (req, res) => {
 
     // Initialize bidding in Redis using the booking._id as bookingId
 
-    await initializeBidding(savedBooking._id.toString(), bidConfig);
+    // await initializeBidding(savedBooking._id.toString(), bidConfig);
 
     //   check bidding data --> console
     
-    await checkBiddingData(savedBooking._id.toString());
+    // await checkBiddingData(savedBooking._id.toString());
 
 
     // Process booking and create Kafka topics
@@ -200,14 +201,21 @@ exports.createBooking = async (req, res) => {
     // );
 
 
-   await processBookingForRedis(
-    pickup_location.pickup_geo.coordinates[1], // Latitude
-      pickup_location.pickup_geo.coordinates[0], // Longitude
-      { ...newBooking.toObject() }, // Booking data to send
-      steps,
-      stepSize
-   )
+  //  await processBookingForRedis(
+  //   pickup_location.pickup_geo.coordinates[1], // Latitude
+  //     pickup_location.pickup_geo.coordinates[0], // Longitude
+  //     { ...newBooking.toObject() }, // Booking data to send
+  //     steps,
+  //     stepSize
+  //  )
 
+   await biddingAndChannels(
+    { ...newBooking.toObject() },
+      pickup_location.pickup_geo.coordinates[1], 
+      pickup_location.pickup_geo.coordinates[0],
+      bidConfig,
+      savedBooking._id.toString()
+   )
 
   //  const processBookingForRedis = async (lat, lng, bookingData, steps, stepSize) => {
   //   const h3Index = convertLatLngToH3(lat, lng, 9);
@@ -232,3 +240,249 @@ exports.createBooking = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const Booking = require("../../models/Booking");
+// const h3 = require("h3-js");
+// const axios = require("axios");
+// // const { processBookingForRedis } = require("../../kafka/kafkaService");
+// const { initializeBidding } = require("../../controllers/bookingControllers/biddingService");
+// // const { convertLatLngToH3 } = require("../../utility");
+
+// const { processBookingForKafka, processBookingForRedis } = require("../../kafka/kafkaService");
+
+// const {
+// //   initializeBidding,
+//   checkBiddingData,
+// } = require("../bookingControllers/biddingService");
+// const { convertLatLngToH3 } = require("../../utility");
+
+// const H3_RESOLUTION = 9;
+
+// exports.createBooking = async (req, res) => {
+//     try {
+//         const {
+//             pickup_location,
+//             drop_location,
+//             status,
+//             tids,
+//             channel,
+//             orderId,
+//             bidConfig,
+//         } = req.body;
+
+//         // Convert pickup and drop lat/lng to H3 index
+//         const pickupH3Result = await convertLatLngToH3(
+//             pickup_location.pickup_geo.coordinates[1],
+//             pickup_location.pickup_geo.coordinates[0],
+//             H3_RESOLUTION
+//         );
+
+//         const dropH3Result = await convertLatLngToH3(
+//             drop_location.drop_geo.coordinates[1],
+//             drop_location.drop_geo.coordinates[0],
+//             H3_RESOLUTION
+//         );
+
+//         const pickupH3i = pickupH3Result.h3Index;
+//         const dropH3i = dropH3Result.h3Index;
+
+//         // Calculate trip distance
+//         let trip_distance;
+//         const hexagonEdgeLengthKm = 0.7;
+//         const correctionFactor = 0.5;
+
+//         if (pickupH3i === dropH3i) {
+//             trip_distance = 200;
+//         } else {
+//             const path = h3.gridPathCells(pickupH3i, dropH3i);
+//             trip_distance = path.length * hexagonEdgeLengthKm * correctionFactor;
+//         }
+
+//         trip_distance = parseFloat(trip_distance);
+//         if (isNaN(trip_distance)) {
+//             throw new Error("Calculated trip distance is not a number");
+//         }
+
+//         // Create a new booking with the provided details
+//         const newBooking = new Booking({
+//             pickup_location: {
+//                 ...pickup_location,
+//                 pickup_h3i: pickupH3i,
+//                 pickup_geo: {
+//                     type: "Point",
+//                     coordinates: [
+//                         pickup_location.pickup_geo.coordinates[0], // longitude
+//                         pickup_location.pickup_geo.coordinates[1], // latitude
+//                     ],
+//                 },
+//             },
+//             drop_location: {
+//                 ...drop_location,
+//                 drop_h3i: dropH3i, // Add H3 index to drop_location
+//                 drop_geo: {
+//                     type: "Point",
+//                     coordinates: [
+//                         drop_location.drop_geo.coordinates[0], // longitude
+//                         drop_location.drop_geo.coordinates[1], // latitude
+//                     ],
+//                 },
+//             },
+//             trip_distance,
+//             status,
+//             tids,
+//             channel,
+//             orderId,
+//             bidConfig,
+//         });
+
+//         // Save the booking to the database
+//         const savedBooking = await newBooking.save();
+
+//         // Initialize bidding and channel creation processes
+//         await initializeProcesses(savedBooking._id.toString(), bidConfig);
+
+//         res.status(201).json({
+//             message: "Booking created and processes initialized successfully",
+//             data: savedBooking,
+//         });
+//     } catch (error) {
+//         console.error("Error creating booking:", error);
+//         res.status(500).json({
+//             message: "Error creating booking",
+//             error: error.message,
+//         });
+//     }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+// const Booking = require("../../models/Booking");
+// const h3 = require("h3-js");
+// const { convertLatLngToH3 } = require("../../utility");
+// const { initializeBiddingAndChannelCreation } = require("../bookingControllers/biddingAndChannelService");
+
+// const H3_RESOLUTION = 9;
+
+// exports.createBooking = async (req, res) => {
+//     try {
+//         const {
+//             pickup_location,
+//             drop_location,
+//             status,
+//             tids,
+//             channel,
+//             orderId,
+//             bidConfig,
+//         } = req.body;
+
+//         // Convert pickup and drop lat/lng to H3 index
+//         const pickupH3Result = await convertLatLngToH3(
+//             pickup_location.pickup_geo.coordinates[1],
+//             pickup_location.pickup_geo.coordinates[0],
+//             H3_RESOLUTION
+//         );
+
+//         const dropH3Result = await convertLatLngToH3(
+//             drop_location.drop_geo.coordinates[1],
+//             drop_location.drop_geo.coordinates[0],
+//             H3_RESOLUTION
+//         );
+
+//         const pickupH3i = pickupH3Result.h3Index;
+//         const dropH3i = dropH3Result.h3Index;
+
+//         // Calculate trip distance
+//         let trip_distance;
+//         const hexagonEdgeLengthKm = 0.7;
+//         const correctionFactor = 0.5;
+
+//         if (pickupH3i === dropH3i) {
+//             trip_distance = 200;
+//         } else {
+//             const path = h3.gridPathCells(pickupH3i, dropH3i);
+//             trip_distance = path.length * hexagonEdgeLengthKm * correctionFactor;
+//         }
+
+//         trip_distance = parseFloat(trip_distance);
+//         if (isNaN(trip_distance)) {
+//             throw new Error("Calculated trip distance is not a number");
+//         }
+
+//         // Create a new booking with the provided details
+//         const newBooking = new Booking({
+//             pickup_location: {
+//                 ...pickup_location,
+//                 pickup_h3i: pickupH3i,
+//                 pickup_geo: {
+//                     type: "Point",
+//                     coordinates: [
+//                         pickup_location.pickup_geo.coordinates[0], // longitude
+//                         pickup_location.pickup_geo.coordinates[1], // latitude
+//                     ],
+//                 },
+//             },
+//             drop_location: {
+//                 ...drop_location,
+//                 drop_h3i: dropH3i, // Add H3 index to drop_location
+//                 drop_geo: {
+//                     type: "Point",
+//                     coordinates: [
+//                         drop_location.drop_geo.coordinates[0], // longitude
+//                         drop_location.drop_geo.coordinates[1], // latitude
+//                     ],
+//                 },
+//             },
+//             trip_distance,
+//             status,
+//             tids,
+//             channel,
+//             orderId,
+//             bidConfig,
+//         });
+
+//         // Save the booking to the database
+//         const savedBooking = await newBooking.save();
+
+//         // Initialize bidding and channel creation processes
+//         await initializeBiddingAndChannelCreation(savedBooking._id.toString(), bidConfig);
+
+//         res.status(201).json({
+//             message: "Booking created and processes initialized successfully",
+//             data: savedBooking,
+//         });
+//     } catch (error) {
+//         console.error("Error creating booking:", error);
+//         res.status(500).json({
+//             message: "Error creating booking",
+//             error: error.message,
+//         });
+//     }
+// };

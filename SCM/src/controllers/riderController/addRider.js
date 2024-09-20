@@ -1,4 +1,4 @@
-// const Rider = require("../../models/Rider");
+const Rider = require("../../models/Rider");
 
 exports.createRider = async (req, res) => {
   const { mobile } = req.body;

@@ -5,6 +5,8 @@
  * @author Sanket Sarang <sanket@blobcity.com>
  */
 
+const { connectToMongo } = require("./db");
+
 /**
  * Function to fire a generic select query on either Mongo or Redis. 
  * It is capable of running the following conditions:
@@ -19,6 +21,7 @@
  */
 
 const fetch = async (query) => new Promise(async (resolve, reject) => {
+     console.log('query in fetch',query);
 
     switch(query.db) {
         case 'redis':
@@ -38,13 +41,29 @@ const processRedisQuery = async (query) => new Promise((resolve, reject) => {
     resolve([]); //rows of records. Must always be an array in response.
 })
 
-const processMongoQuery = async (query) => new Promise((resolve, reject) => {
-    let table = query.table;
+// const processMongoQuery = async (query) => new Promise((resolve, reject) => {
+//     let table = query.table;
 
-    //run the query on Mongo and resolve or reject depending on outcome
+//     //run the query on Mongo and resolve or reject depending on outcome
 
-    resolve([]); //rows of records. Must always be an array in response.
-})
+//     resolve([]); //rows of records. Must always be an array in response.
+// })
+
+
+
+
+const processMongoQuery = async (query) => {
+    
+    try {
+      const db = await connectToMongo(); 
+
+      const collection = db.collection(query.table); 
+      const data = await collection.find(query.conditions || {}).toArray(); 
+      return data; 
+    } catch (error) {
+      throw error;
+    }
+  };
 
 module.exports = {fetch}
 

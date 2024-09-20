@@ -29,4 +29,5 @@ app.listen(PORT,()=>{
     console.log(`SERVER STARTED SUCCESSFULLY ON PORT ${PORT}`)
 })
 
-connectDB();
+// connectDB();
+connectDB.connectToMongo();
