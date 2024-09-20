@@ -5,6 +5,7 @@
  * @author Sanket Sarang <sanket@blobcity.com>
  */
 
+const redisClient = require("../config/redisClient");
 const { connectToMongo } = require("./db");
 
 /**
@@ -20,7 +21,7 @@ const insert = async (query) =>
 
   new Promise(async (resolve, reject) => {
 
-    console.log("query : ", query);
+    console.log("query redis insert: ", query);
 
     /*const query = {
     db:mongo / redis
@@ -39,22 +40,36 @@ const insert = async (query) =>
     }
   });
 
-const processRedisQuery = async (query) =>
-  new Promise((resolve, reject) => {
-    let table = query.table;
-    let rows = query.rows;
+// const processRedisQuery = async (query) =>
+//   new Promise((resolve, reject) => {
+//     let table = query.table;
+//     let rows = query.rows;
 
-    let insertStatus = [];
-    rows.forEach((row) => {
-      //TODO: perform insert and add status in sequence.
+//     let insertStatus = [];
+//     // rows.forEach((row) => {
+//     //   //TODO: perform insert and add status in sequence.
 
-      insertStatus.push(true);
-    });
+//     //   insertStatus.push(true);
+//     // });
 
-    //perform an insert operation.
+    
 
-    resolve(insertStatus); //rows of records. Must always be an array in response.
-  });
+//     // //perform an insert operation.
+
+//     // resolve(insertStatus); //rows of records. Must always be an array in response.
+
+
+//     try {
+//       for (const row of rows) {
+//         const key = `${table}:${row.id}`; // Create a unique key for each record using an ID
+//         await redisClient.set(key, JSON.stringify(row)); // Store the row as a JSON string
+//         insertStatus.push({ key, ...row }); // Keep track of inserted records
+//       }
+//       resolve(insertStatus); // Resolve with the inserted records
+//     } catch (error) {
+//       reject(error); // Reject the promise if there's an error
+//     }
+//   });
 
 // const processMongoQuery = async (query) =>
 //   new Promise((resolve, reject) => {
@@ -86,6 +101,28 @@ const processRedisQuery = async (query) =>
 //   });
 
 
+const processRedisQuery = async (query) => 
+    new Promise(async (resolve, reject) => {
+        console.log("Processing Redis Query:", query);
+        const table = query.table; 
+        const rows = query.rows;    
+
+        let insertStatus = [];
+
+        try {
+            for (const row of rows) {
+                const key = `${table}:${row.id}`; 
+                await redisClient.hset(key, row); 
+                insertStatus.push({ key, ...row }); 
+                console.log("Inserted Record:", { key, ...row }); 
+            }
+            resolve(insertStatus); 
+        } catch (error) {
+            console.error("Error during Redis insert:", error);
+            reject(error); 
+        }
+    });
+
 
 
 const processMongoQuery = async (query) =>
@@ -96,8 +133,8 @@ const processMongoQuery = async (query) =>
 
     const db = await connectToMongo(); 
 
-    const rows = query.rows; // This should be an array of objects to insert
-    const table = query.table; // Collection name
+    const rows = query.rows; 
+    const table = query.table; 
 
     try {
 

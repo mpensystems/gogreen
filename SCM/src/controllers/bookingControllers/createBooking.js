@@ -140,44 +140,47 @@ exports.createBooking = async (req, res) => {
     }
 
     // Create a new booking with the provided details
-    const newBooking = new Booking({
-      pickup_location: {
-        ...pickup_location,
-        pickup_h3i: pickupH3i,
-        pickup_geo: {
-          type: "Point",
-          coordinates: [
-            pickup_location.pickup_geo.coordinates[0], // longitude
-            pickup_location.pickup_geo.coordinates[1], // latitude
-          ],
-        },
-      },
-      drop_location: {
-        ...drop_location,
-        drop_h3i: dropH3i, // Add H3 index to drop_location
-        drop_geo: {
-          type: "Point",
-          coordinates: [
-            drop_location.drop_geo.coordinates[0], // longitude
-            drop_location.drop_geo.coordinates[1], // latitude
-          ],
-        },
-      },
-      trip_distance,
-      // rid,
-      status,
-      tids,
-      channel,
-      orderId,
-      bidConfig,
-    });
+    // const newBooking = new Booking({
+    //   pickup_location: {
+    //     ...pickup_location,
+    //     pickup_h3i: pickupH3i,
+    //     pickup_geo: {
+    //       type: "Point",
+    //       coordinates: [
+    //         pickup_location.pickup_geo.coordinates[0], // longitude
+    //         pickup_location.pickup_geo.coordinates[1], // latitude
+    //       ],
+    //     },
+    //   },
+    //   drop_location: {
+    //     ...drop_location,
+    //     drop_h3i: dropH3i, // Add H3 index to drop_location
+    //     drop_geo: {
+    //       type: "Point",
+    //       coordinates: [
+    //         drop_location.drop_geo.coordinates[0], // longitude
+    //         drop_location.drop_geo.coordinates[1], // latitude
+    //       ],
+    //     },
+    //   },
+    //   trip_distance,
+    //   // rid,
+    //   status,
+    //   tids,
+    //   channel,
+    //   orderId,
+    //   bidConfig,
+    // });
 
-    // Save the booking to the database
-    const savedBooking = await newBooking.save();
+    // // Save the booking to the database
+    // const savedBooking = await newBooking.save();
 
     // Initialize bidding in Redis using the booking._id as bookingId
 
     // await initializeBidding(savedBooking._id.toString(), bidConfig);
+
+    // for insert redis in config 
+    // await initializeBidding( 1234,bidConfig);
 
     //   check bidding data --> console
     
@@ -209,13 +212,21 @@ exports.createBooking = async (req, res) => {
   //     stepSize
   //  )
 
-   await biddingAndChannels(
-    { ...newBooking.toObject() },
-      pickup_location.pickup_geo.coordinates[1], 
-      pickup_location.pickup_geo.coordinates[0],
-      bidConfig,
-      savedBooking._id.toString()
-   )
+
+
+  // to be uncommented 
+
+  //  await biddingAndChannels(
+  //   { ...newBooking.toObject() },
+  //     pickup_location.pickup_geo.coordinates[1], 
+  //     pickup_location.pickup_geo.coordinates[0],
+  //     bidConfig,
+  //     savedBooking._id.toString()
+  //  )
+
+
+
+
 
   //  const processBookingForRedis = async (lat, lng, bookingData, steps, stepSize) => {
   //   const h3Index = convertLatLngToH3(lat, lng, 9);
@@ -230,7 +241,7 @@ exports.createBooking = async (req, res) => {
   
     res.status(201).json({
       message: "Booking created and bidding initialized successfully",
-      data: savedBooking,
+      // data: savedBooking,
     });
   } catch (error) {
     console.error("Error creating booking:");

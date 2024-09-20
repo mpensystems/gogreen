@@ -33,9 +33,11 @@ const axios = require('axios');
 // Initialize Redis Client
 const Redis = require('ioredis');
 const { processBookingForRedis } = require('../../kafka/kafkaService');
+const { insert } = require('../../db/insert');
+const { fetch } = require('../../db/fetch');
 // const redisClient = new Redis(process.env.REDIS_URL);
 
-const initializeBidding = async (bookingId, bidConfig,lat,lng) => {
+const initializeBidding = async (bookingId, bidConfig) => {
     console.log("inside initilize bidding");
 
     try {
@@ -43,8 +45,25 @@ const initializeBidding = async (bookingId, bidConfig,lat,lng) => {
         const { min_bid, max_bid, steps, step_period } = bidConfig;
         console.log("response from body : ", min_bid, max_bid, steps, step_period);
 
+       
         // Using hmset for older versions
-        await redisClient.hset(`bidding:${bookingId}`, {
+        // await redisClient.hset(`bidding:${bookingId}`, {
+        //     min_bid: min_bid.toString(),
+        //     max_bid: max_bid.toString(),
+        //     current_bid: min_bid.toString(),
+        //     steps: steps.toString(),
+        //     step_period: step_period.toString(),
+        //     current_step: '0',
+        //     status: 'active',
+        //     started_at: new Date().toISOString()
+        // });
+
+
+
+        // using direct query
+
+        const dataToAdd = {
+            id: bookingId, // Use bookingId as the unique identifier
             min_bid: min_bid.toString(),
             max_bid: max_bid.toString(),
             current_bid: min_bid.toString(),
@@ -53,10 +72,30 @@ const initializeBidding = async (bookingId, bidConfig,lat,lng) => {
             current_step: '0',
             status: 'active',
             started_at: new Date().toISOString()
-        });
+        };
 
+        // Create the query object for inserting into Redis
+        const query = {
+            db: "redis",
+            table: "bidding", 
+            rows: [dataToAdd] 
+        };
+
+
+        console.log("Query to Insert:", query);
+
+        // Call the insert function
+        const insertStatus = await insert(query);
+        console.log("Insert Status:", insertStatus);
+
+        const fetchedData = await fetch({
+            db: "redis",
+            table: "bidding", 
+            conditions: { id: bookingId } // Ensure this matches the type used in dataToAdd
+        });
+        console.log("Fetched Data:", fetchedData);
         // Schedule the first bidding update
-        setTimeout(() => updateBiddingSteps(bookingId), step_period * 1000,lat,lng);
+        // setTimeout(() => updateBiddingSteps(bookingId), step_period * 1000,lat,lng);
 
     } catch (error) {
         console.error('Error initializing bidding:', error);
