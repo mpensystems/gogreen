@@ -352,10 +352,10 @@
 
 
 
-const redisClient = require("../config/redisClient");
+const redisClient = require("../../config/redisClient");
 const axios = require('axios');
 const h3 = require("h3-js");
-const { convertLatLngToH3 } = require("../h3Utils");
+const { convertLatLngToH3 } = require("../../h3Utils");
 
 // Main function to handle bidding and channels
 const biddingAndChannels = async (bookingData, lat, lng, bidConfig, bookingId) => {
@@ -379,6 +379,8 @@ const startBiddingProcess = async (bookingId, bidConfig, lat, lng, bookingData) 
         const biddingKey = `bidding:${bookingId}`;
 
         // Initialize bidding data in Redis
+        // convert to insert in redis
+
         await redisClient.hset(biddingKey, {
             min_bid: min_bid.toString(),
             max_bid: max_bid.toString(),
@@ -401,8 +403,11 @@ const startBiddingProcess = async (bookingId, bidConfig, lat, lng, bookingData) 
 
 // Update the bidding step, create Redis channels, and increment the bid
 const updateBiddingStep = async (bookingId, lat, lng, bookingData) => {
+    console.log("booking id to pass : ", bookingId)
     try {
         const biddingKey = `bidding:${bookingId}`;
+
+        console.log("bidding key as id" , biddingKey);
         const biddingData = await redisClient.hgetall(biddingKey);
 
         if (!biddingData || Object.keys(biddingData).length === 0) {
@@ -436,6 +441,8 @@ const updateBiddingStep = async (bookingId, lat, lng, bookingData) => {
             console.log(`New Step: ${newStep}, New Bid: ${newBid}`);
 
             // Update the bidding data in Redis
+            // convert to insert in redis
+            
             await redisClient.hset(biddingKey, {
                 current_step: newStep.toString(),
                 current_bid: newBid.toString()
@@ -445,6 +452,14 @@ const updateBiddingStep = async (bookingId, lat, lng, bookingData) => {
             await processBookingForRedis(lat, lng, steps, 200, newStep, bookingData);
 
             console.log(`Updated bid for booking ${bookingId} to ${newBid}`);
+
+
+
+            // **Call the notifyRidersAboutBiddingStep function here**
+
+            const channel = `bidding-notification:${bookingId}`;
+            await notifyRidersAboutBiddingStep(bookingId, newStep, stepRadius, channel);
+
 
             // Schedule the next update
             setTimeout(() => updateBiddingStep(bookingId, lat, lng, bookingData), stepPeriod * 1000);
