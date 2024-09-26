@@ -4,19 +4,18 @@
  * @author Sanket Sarang <sanket@blobcity.com>
  */
 
-const e = require('express');
-const api = require('./api');
-const URLS = require('./urls');
-const crypto = require('crypto');
+import {post} from './api.js';
+import { SCM_DB_FETCH } from './urls.js';
+import {createHash} from 'crypto';
 
 /**
  * Function to check if session token is valid.
  * @param {*} bearer the bearer session token received in Authorization header
  * @returns rid if the session token is valid, else null
  */
-const validateSt = (bearer) => new Promise( async (resolve) => {
+export const validateSt = (bearer) => new Promise( async (resolve) => {
     let st = bearer.replace('Bearer ', '');
-    let stHash = crypto.createHash('md5').update(st).digest('hex');
+    let stHash = createHash('md5').update(st).digest('hex');
     api.post(URLS.SCM_DB_FETCH, {
         db: 'redis',
         table: 'RiderSession',
@@ -29,7 +28,7 @@ const validateSt = (bearer) => new Promise( async (resolve) => {
     }).catch(err => resolve(null));
 })
 
-const makeid = (length) => {
+export function makeid(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
@@ -39,9 +38,4 @@ const makeid = (length) => {
       counter += 1;
     }
     return result;
-}
-
-module.exports = {
-    validateSt,
-    makeid
 }

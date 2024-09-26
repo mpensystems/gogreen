@@ -49,11 +49,14 @@
 
 
 // index.js
-const { startWebSocketServer } = require('./websocket/webSocketServer'); // Correct function name
-const { connectToBookingService } = require('./websocket/bookingServiceClient');
+import {startWebSocketServer} from './websocket/webSocketServer.js'; // Correct function name
+import {connectToBookingService} from './websocket/bookingServiceClient.js';
 
-const express = require('express');
+import express from 'express';
 const app = express();
+import { initiateLogin, validateOtp } from './routes/v1/initiate-login.js';
+import pkg from 'body-parser';
+const {json} = pkg;
 
 const PORT = process.env.PORT || 8003;
 
@@ -62,12 +65,14 @@ const server = app.listen(PORT, () => {
 });
 
 // Connect to the Booking Service and pass the WebSocket instance to the server
-const bookingWs = connectToBookingService();
-startWebSocketServer(bookingWs); // Correctly pass bookingWs
+// const bookingWs = connectToBookingService();
+// startWebSocketServer(bookingWs); // Correctly pass bookingWs
 
-app.use('/v1/initiate-login', require('./routes/v1/initiate-login'));
-app.use('/v1/validate-otp', require('./routes/v1/validate-otp'));
-app.use('/v1/rider-ws-auth', require('./routes/v1/rider-ws-auth'));
+app.use(json());
+
+app.post('/v1/initiate-login', initiateLogin);
+app.use('/v1/validate-otp', validateOtp);
+// app.use('/v1/rider-ws-auth', require('./routes/v1/rider-ws-auth'));
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
