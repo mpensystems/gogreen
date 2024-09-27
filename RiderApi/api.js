@@ -21,7 +21,6 @@ const post = async (url, formData, headers) => new Promise((resolve, reject) => 
     if(formData != null) config.data = JSON.stringify(formData);
 
     axios.request(config).then(response => {
-        console.log('RESPONSE: ' + JSON.stringify(response.data));
         resolve(response.data);
     }).catch(err => {
         console.log(err);

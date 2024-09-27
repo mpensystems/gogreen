@@ -7,7 +7,7 @@
 
 var express = require('express');
 var router = express.Router();
-const dbInsert = require('../../../DMM/src/db/insert');
+const dbInsert = require('../../../src/db/insert');
 
 router.post('/', (req, res) => {
     let query = req.body;     
@@ -33,7 +33,7 @@ router.post('/', (req, res) => {
 
     dbInsert.insert(query)
     .then(result => res.json(result))
-    .catch(err => res.status(500),send('ER500 - DB query failed'));
+    .catch(err => res.status(500).send('ER500 - DB query failed'));
 
 })
 

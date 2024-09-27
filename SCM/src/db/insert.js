@@ -5,6 +5,7 @@
  * @author Sanket Sarang <sanket@blobcity.com>
  */
 
+const { json } = require("express");
 const redisClient = require("../config/redisClient");
 const { connectToMongo } = require("./db");
 
@@ -17,12 +18,7 @@ const { connectToMongo } = require("./db");
  * for corresponding to each row of insert.
  */
 
-const insert = async (query) =>
-
-  new Promise(async (resolve, reject) => {
-
-    console.log("query redis insert: ", query);
-
+const insert = (query) => new Promise(async (resolve, reject) => {
     /*const query = {
     db:mongo / redis
     table: booking / rider 
@@ -103,7 +99,6 @@ const insert = async (query) =>
 
 const processRedisQuery = async (query) => 
     new Promise(async (resolve, reject) => {
-        console.log("Processing Redis Query:", query);
         const table = query.table; 
         const rows = query.rows;    
 
@@ -111,12 +106,16 @@ const processRedisQuery = async (query) =>
 
         try {
             for (const row of rows) {
-                const key = `${table}:${row.id}`; 
-                await redisClient.hset(key, row); 
-                insertStatus.push({ key, ...row }); 
-                console.log("Inserted Record:", { key, ...row }); 
+                let key = `${table}:${row.key}`;
+                if((row.key == null || key == null) 
+                || row.value == null) {
+                  insertStatus.push(false);
+                  continue;
+                }
+                await redisClient.hset(key, row.value);
+                insertStatus.push(true); 
             }
-            resolve(insertStatus); 
+            resolve({status: insertStatus}); 
         } catch (error) {
             console.error("Error during Redis insert:", error);
             reject(error); 
