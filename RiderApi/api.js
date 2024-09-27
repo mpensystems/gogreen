@@ -1,20 +1,32 @@
 var request = require('request');
 
-const post = async (url, formData, headers) => new Promise((resolve, reject) => {
-    var options = {
-        'method': 'POST',
-        'url': url
-    };
+const axios = require('axios');
 
-    if(headers != null) options.headers = headers;
-    if(formData != null) options.formData = formData;
-    
-    request(options, function (error, response) {
-        if (error) {
-            //TODO: Error status processing and error code pass forward is to be implemented.
-            reject('ER500')
-        } else resolve(response.body);
-    });
+const post = async (url, formData, headers) => new Promise((resolve, reject) => {
+    let config = {
+        method: 'post',
+        url: url
+    }
+
+    console.log(url);
+
+    if(headers != null) {
+        config.headers = headers;
+        config.headers['Content-Type'] = 'application/json'
+    } else {
+        config.headers = {
+            'Content-Type': 'application/json'
+        }
+    }
+    if(formData != null) config.data = JSON.stringify(formData);
+
+    axios.request(config).then(response => {
+        console.log('RESPONSE: ' + JSON.stringify(response.data));
+        resolve(response.data);
+    }).catch(err => {
+        console.log(err);
+        reject('ER500');
+    })
 })
 
 module.exports = {post}

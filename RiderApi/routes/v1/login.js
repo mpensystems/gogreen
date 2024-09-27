@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import { makeid } from '../../utils.js';
 import { post } from '../../api.js';
-import { SCM_DB_FETCH } from '../../urls.js';
+import { SCM_DB_FETCH, SCM_DB_INSERT } from '../../urls.js';
 
 export const initiateLogin = async (req, res) => {
     let country_code = req.body.country_code;
@@ -22,6 +22,20 @@ export const initiateLogin = async (req, res) => {
         let otpHash = createHash('md5').update(otp).digest('hex');
         let token = makeid(36);
 
+        await post(SCM_DB_INSERT, {
+            db: 'redis',
+            table: 'RiderOtp',
+            rows: [
+                {
+                    key: token,
+                    value: {
+                        token: token,
+                        otpHash: otpHash
+                    }
+                }
+            ]
+        })
+
         /**
          * TODO:
          * 1. Insert otpHash value in Redis.RiderOtp along with the corresponding token
@@ -30,6 +44,7 @@ export const initiateLogin = async (req, res) => {
 
         res.json({ token: token });
     } catch (err) {
+        console.log(err);
         res.status(500).send('ER500');
     }
 }

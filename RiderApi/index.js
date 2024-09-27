@@ -6,6 +6,8 @@ const app = express();
 import { initiateLogin, validateOtp } from './routes/v1/login.js';
 import pkg from 'body-parser';
 const {json} = pkg;
+import {config} from 'dotenv'
+config();
 
 const PORT = process.env.PORT || 8003;
 
