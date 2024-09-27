@@ -1,6 +1,3 @@
-// var express = require('express');
-// var router = express.Router();
-// var request = require('request');
 import { createHash } from 'crypto';
 import { makeid } from '../../utils.js';
 import { post } from '../../api.js';
@@ -107,32 +104,3 @@ export const validateOtp = async (req, res) => {
         res.status(500).send('ER500');
     }
 }
-
-// router.post('/', async (req, res) => {
-//     let country_code = req.body.country_code;
-//     let mobile = req.body.mobile;
-
-//     if(country_code == null || country_code == '') {
-//         res.status(400).send('ER701');
-//         return;
-//     }
-
-//     if(mobile == null || mobile == '') {
-//         res.status(400).send('ER702');
-//         return;
-//     }
-
-//     let otp = '' + (Math.floor(100000 + Math.random() * 900000));
-//     let otpHash = crypto.createHash('md5').update(otp).digest('hex');
-//     let token = utils.makeid(36);
-
-//     /**
-//      * TODO:
-//      * 1. Insert otpHash value in Redis.RiderOtp along with the corresponding token
-//      * 2. Send OTP via Exotel to the mobile number
-//      */
-
-//     res.json({token: token});
-// })
-
-// module.exports = router;
