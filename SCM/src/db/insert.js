@@ -143,6 +143,7 @@ const processMongoQuery = async (query) =>
       for (const row of rows) {
 
         const result = await collection.insertOne(row);
+        console.log(result);
         insertResults.push({
           insertedId: result.insertedId,
           ...row, 

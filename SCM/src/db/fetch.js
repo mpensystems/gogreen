@@ -7,6 +7,7 @@
 
 const redisClient = require("../config/redisClient");
 const { connectToMongo } = require("./db");
+const db = connectToMongo();
 
 /**
  * Function to fire a generic select query on either Mongo or Redis. 
@@ -22,8 +23,6 @@ const { connectToMongo } = require("./db");
  */
 
 const fetch = async (query) => new Promise(async (resolve, reject) => {
-    console.log('query in fetch', query);
-
     switch (query.db) {
         case 'redis':
             resolve(await processRedisQuery(query));
@@ -142,20 +141,14 @@ const processRedisQuery = async (query) =>
 
 
 const processMongoQuery = async (query) => new Promise(async (resolve, reject) => {
-    console.log('Processing mongo query: ' + query);
-
-    resolve([{
-        test: 'test'
-    }])
-    // try {
-    //     const db = await connectToMongo();
-
-    //     const collection = db.collection(query.table);
-    //     const data = await collection.find(query.conditions || {}).toArray();
-    //     return data;
-    // } catch (error) {
-    //     throw error;
-    // }
+    try {
+        const collection = db.collection(query.table);
+        const data = await collection.find(query.condition || {}).toArray();
+        resolve(data);
+    } catch (error) {
+        console.log(error);
+        reject('ER500');
+    }
 }) 
 
 

@@ -34,6 +34,8 @@ export const initiateLogin = async (req, res) => {
                     value: {
                         otpHash: otpHash,
                         mobHash: mobHash,
+                        country_code: country_code,
+                        mobile: mobile,
                         createdAt: Date.now()
                     }
                 }
@@ -75,34 +77,63 @@ export const validateOtp = async (req, res) => {
         }
 
         let st = makeid(64);
-        let mobHash = riderOtpRecords[0].mobHash;
+        let stHash = createHash('md5').update(st).digest('hex');
+        let riderOtp = riderOtpRecords[0];
+        let mobHash = riderOtp.mobHash;
 
-        /**
-         * TODO: Add entry in Redis.RiderSession
-         */
 
         //Load rider details
         let riderArr = await post(SCM_DB_FETCH, {
             db: 'mongo',
             table: 'Riders',
-            q: {
+            condition: {
                 mobHash: mobHash
             }
         })
+
+        let rider;
 
         /**
          * Register a new rider and create an rid if no rider found corresponding to the login session.
          */
         if (riderArr.length == 0) {
-            res.status(500).send('ER500');
-            return;
-        }
+            rider = createNewRiderObject();
+            rider.mobHash = mobHash;
+            rider.country_code = riderOtp.country_code;
+            rider.mobile = riderOtp.mobile;
+            await post(SCM_DB_INSERT, {
+                db: 'mongo',
+                table: 'Riders',
+                rows: [
+                    rider
+                ]
+            })
+        } else rider = riderArr[0];
 
-        let rider = riderArr[0];
+
+        /**
+         * TODO: Add entry in Redis.RiderSession
+         */
+        await post(SCM_DB_INSERT, {
+            db: 'redis',
+            table: 'RiderSession',
+            rows: [
+                {
+                    key: stHash,
+                    value: {
+                        stHash: stHash,
+                        rid: rider.rid,
+                        createdAt: Date.now(),
+                        expiresAt: Date.now() + 24 * 60 * 60 * 1000 //24 hrs
+                    }
+                }
+            ]
+        })
 
         //return session token, along with key information of the rider that just did a successful login
         res.json({
-            st: st, rider: {
+            st: st,
+            rider: {
                 mobile: rider.mobile,
                 first_name: rider.first_name,
                 last_name: rider.last_name,
@@ -113,7 +144,7 @@ export const validateOtp = async (req, res) => {
                 vehicle_no: rider.vehicle_no,
                 kyc_approved: rider.kyc_approved,
                 kyc_error_message: rider.kyc_error_message,
-                created_at: rider.created_at // use for displaying "Members Since" on the app. 
+                createdAt: rider.createdAt // use for displaying "Members Since" on the app. 
             }
         });
     } catch (err) {
@@ -122,7 +153,46 @@ export const validateOtp = async (req, res) => {
     }
 }
 
-export const validateSession = async(req, res) => {
+export const validateSession = async (req, res) => {
     let st = req.body.st;
 
-} 
+}
+
+const createNewRiderObject = () => {
+    return {
+        rid: makeid(16),
+        first_name: '',
+        last_name: '',
+        country_code: '',
+        mobile: '',
+        mobHash: '',
+        address_line1: '',
+        address_line2: '',
+        flat_no: '',
+        zipcode: '',
+        city: '',
+        district: '',
+        photo_id_type: '',
+        photo_id: '',
+        utility_bill: '',
+        photo: '',
+        drivers_license: '',
+        drivers_license_expiry: '',
+        pan: '',
+        vehicle_no: '',
+        rc_copy: '',
+        vehicle_type: '',
+        is_electric: '',
+        fueled_propulsion: '',
+        bank_ac: '',
+        bank_ifsc: '',
+        bank_ac_name: '',
+        cancelled_cheque: '',
+        kyc_aproved: '',
+        kyc_error_message: '',
+        kyc_approvedAt: 0,
+        kyc_approvedBy: '',
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+    }
+}
