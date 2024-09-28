@@ -8,13 +8,13 @@
 
 var express = require('express');
 var router = express.Router();
-const dbFetch = require('../../../DMM/src/db/fetch');
+const dbFetch = require('../../../src/db/fetch');
 
 router.post('/', (req, res) => {
     let query = req.body;
 
     // validate basic format of the query object
-    if(query == null
+    if (query == null
         || !('db' in query)
         || query.db == ''
         || !('table' in query)
@@ -25,8 +25,8 @@ router.post('/', (req, res) => {
     }
 
     dbFetch.fetch(query)
-    .then(result => res.json(result))
-    .catch(err => res.status(500),send('ER500 - DB query failed'));
+        .then(result => res.json(result))
+        .catch(err => res.status(500).send('ER500 - DB query failed'));
 
 })
 

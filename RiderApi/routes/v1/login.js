@@ -21,6 +21,7 @@ export const initiateLogin = async (req, res) => {
     try {
         let otp = '' + (Math.floor(100000 + Math.random() * 900000));
         let otpHash = createHash('md5').update(otp).digest('hex');
+        let mobHash = createHash('md5').update(country_code + '-' + mobile).digest('hex');
         let token = makeid(36);
 
         //Insert otpHash and token in Redis.RiderOtp
@@ -31,8 +32,9 @@ export const initiateLogin = async (req, res) => {
                 {
                     key: token,
                     value: {
-                        token: token,
-                        otpHash: otpHash
+                        otpHash: otpHash,
+                        mobHash: mobHash,
+                        createdAt: Date.now()
                     }
                 }
             ]
@@ -63,10 +65,7 @@ export const validateOtp = async (req, res) => {
         let riderOtpRecords = await post(SCM_DB_FETCH, {
             db: 'redis',
             table: 'RiderOtp',
-            q: {
-                token: token,
-                otpHash: otpHash
-            }
+            id: token
         })
 
         //if length is 0, then token + otp combination is invalid
@@ -75,8 +74,8 @@ export const validateOtp = async (req, res) => {
             return;
         }
 
-        let st = utils.makeid(64);
-        let rid = riderOtpRecords[0].rid;
+        let st = makeid(64);
+        let mobHash = riderOtpRecords[0].mobHash;
 
         /**
          * TODO: Add entry in Redis.RiderSession
@@ -87,7 +86,7 @@ export const validateOtp = async (req, res) => {
             db: 'mongo',
             table: 'Riders',
             q: {
-                rid: rid
+                mobHash: mobHash
             }
         })
 
@@ -118,6 +117,7 @@ export const validateOtp = async (req, res) => {
             }
         });
     } catch (err) {
+        console.log(err);
         res.status(500).send('ER500');
     }
 }

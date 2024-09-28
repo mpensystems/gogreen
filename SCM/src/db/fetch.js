@@ -22,16 +22,16 @@ const { connectToMongo } = require("./db");
  */
 
 const fetch = async (query) => new Promise(async (resolve, reject) => {
-     console.log('query in fetch',query);
+    console.log('query in fetch', query);
 
-    switch(query.db) {
+    switch (query.db) {
         case 'redis':
             resolve(await processRedisQuery(query));
             break;
         case 'mongo':
             resolve(await processMongoQuery(query));
             break;
-    }   
+    }
 })
 
 // const processRedisQuery = async (query) => new Promise((resolve, reject) => {
@@ -51,16 +51,16 @@ const fetch = async (query) => new Promise(async (resolve, reject) => {
 //         console.log(" query in redis : ",query);
 //       const table = query.table; // The collection/table name (e.g., 'bidding')
 //       const conditions = query.conditions; // Conditions for fetching records (e.g., { id: '12345' })
-  
+
 //       let fetchedData = [];
-      
+
 //       try {
 //         // Create a unique key for the record based on the provided conditions
 //         const key = `${table}:${conditions.id}`; 
-  
+
 //         // Fetch the data from Redis
 //         const data = await redisClient.hgetall(key); // Fetch the hash associated with the key
-  
+
 //         if (data) {
 //           // If data exists, convert it to the appropriate format
 //           fetchedData.push({
@@ -79,46 +79,56 @@ const fetch = async (query) => new Promise(async (resolve, reject) => {
 
 
 
-const processRedisQuery = async (query) => 
+const processRedisQuery = async (query) =>
     new Promise(async (resolve, reject) => {
-        console.log("Processing Redis Query:", query);
-        const table = query.table; 
-        const conditions = query.conditions; 
-
-        let fetchedData = [];
-
-        try {
-            if (conditions && conditions.id) {
-                const key = `${table}:${conditions.id}`; 
-                const data = await redisClient.hgetall(key); 
-                if (data) {
-                    fetchedData.push({
-                        id: conditions.id,
-                        ...data
-                    });
-                }
-            } else {
-                const keys = await redisClient.keys(`${table}:*`); 
-                for (const key of keys) {
-                    const data = await redisClient.hgetall(key); 
-                    if (data) {
-                        fetchedData.push({
-                            id: key.split(":")[1], 
-                            ...data
-                        });
-                    }
-                }
-            }
-
-            console.log("Fetched Data:", fetchedData);
-            resolve(fetchedData); 
-        } catch (error) {
-            console.error("Error fetching data from Redis:", error);
-            reject(error); 
+        if(query.id != null) {
+            let key = `${query.table}:${query.id}`;
+            let data = await redisClient.hgetall(key);
+            resolve([data]);
+        } else if(query.q != null) {
+            //TODO: Run a seach query on an redis column index
+            reject('ER500');
+        } else {
+            reject('ER500');
         }
+
+        // const table = query.table;
+        // const conditions = query.conditions;
+
+        // let fetchedData = [];
+
+        // try {
+        //     if (conditions && conditions.id) {
+        //         const key = `${table}:${conditions.id}`;
+        //         const data = await redisClient.hgetall(key);
+        //         if (data) {
+        //             fetchedData.push({
+        //                 id: conditions.id,
+        //                 ...data
+        //             });
+        //         }
+        //     } else {
+        //         const keys = await redisClient.keys(`${table}:*`);
+        //         for (const key of keys) {
+        //             const data = await redisClient.hgetall(key);
+        //             if (data) {
+        //                 fetchedData.push({
+        //                     id: key.split(":")[1],
+        //                     ...data
+        //                 });
+        //             }
+        //         }
+        //     }
+
+        //     console.log("Fetched Data:", fetchedData);
+        //     resolve(fetchedData);
+        // } catch (error) {
+        //     console.error("Error fetching data from Redis:", error);
+        //     reject(error);
+        // }
     });
 
-  
+
 
 // const processMongoQuery = async (query) => new Promise((resolve, reject) => {
 //     let table = query.table;
@@ -131,20 +141,25 @@ const processRedisQuery = async (query) =>
 
 
 
-const processMongoQuery = async (query) => {
+const processMongoQuery = async (query) => new Promise(async (resolve, reject) => {
+    console.log('Processing mongo query: ' + query);
 
-    try {
-      const db = await connectToMongo(); 
+    resolve([{
+        test: 'test'
+    }])
+    // try {
+    //     const db = await connectToMongo();
 
-      const collection = db.collection(query.table); 
-      const data = await collection.find(query.conditions || {}).toArray(); 
-      return data; 
-    } catch (error) {
-      throw error;
-    }
-  };
+    //     const collection = db.collection(query.table);
+    //     const data = await collection.find(query.conditions || {}).toArray();
+    //     return data;
+    // } catch (error) {
+    //     throw error;
+    // }
+}) 
 
-module.exports = {fetch}
+
+module.exports = { fetch }
 
 
 /**
