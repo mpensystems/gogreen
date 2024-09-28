@@ -5,6 +5,7 @@ const router = express.Router();
 const riderRoutes = require('../../routes/v1/riderRoutes');
 const bookingRoutes = require('../../routes/v1/bookingRoutes');
 const dbInsert = require('../../../routes/v1/db-api/insert-data');
+const dbDelete = require('../../../routes/v1/db-api/delete-data');
 
 // const app = express();
 
@@ -15,6 +16,7 @@ const dbInsert = require('../../../routes/v1/db-api/insert-data');
 router.use('/rider', riderRoutes);
 router.use('/booking', bookingRoutes);
 router.use('/db/insert', dbInsert);
+router.use('/db/delete', dbDelete);
 
 
 module.exports = router;

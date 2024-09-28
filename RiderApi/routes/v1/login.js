@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import { makeid } from '../../utils.js';
 import { post } from '../../api.js';
 import { SCM_DB_FETCH, SCM_DB_INSERT } from '../../urls.js';
+import { sendExotelOtp, sendSlackOtp } from '../../controllers/otpController.js';
 
 export const initiateLogin = async (req, res) => {
     let country_code = req.body.country_code;
@@ -22,6 +23,7 @@ export const initiateLogin = async (req, res) => {
         let otpHash = createHash('md5').update(otp).digest('hex');
         let token = makeid(36);
 
+        //Insert otpHash and token in Redis.RiderOtp
         await post(SCM_DB_INSERT, {
             db: 'redis',
             table: 'RiderOtp',
@@ -36,11 +38,8 @@ export const initiateLogin = async (req, res) => {
             ]
         })
 
-        /**
-         * TODO:
-         * 1. Insert otpHash value in Redis.RiderOtp along with the corresponding token
-         * 2. Send OTP via Exotel to the mobile number
-         */
+        //Message OTP to customer via a configured messaging channel
+        sendSlackOtp(country_code + mobile, otp);
 
         res.json({ token: token });
     } catch (err) {
@@ -92,6 +91,9 @@ export const validateOtp = async (req, res) => {
             }
         })
 
+        /**
+         * Register a new rider and create an rid if no rider found corresponding to the login session.
+         */
         if (riderArr.length == 0) {
             res.status(500).send('ER500');
             return;
@@ -119,3 +121,8 @@ export const validateOtp = async (req, res) => {
         res.status(500).send('ER500');
     }
 }
+
+export const validateSession = async(req, res) => {
+    let st = req.body.st;
+
+} 
