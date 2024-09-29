@@ -44,7 +44,7 @@ const processRedisQuery = async (query) =>
         
         try {
             for (const id of query.ids) {
-                let key = `${table}:${id}`;
+                let key = `${query.table}:${id}`;
                 await redisClient.del(key);
                 deleteStatus.push(true); 
             }

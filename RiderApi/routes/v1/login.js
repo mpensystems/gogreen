@@ -1,7 +1,14 @@
+/**
+ * This file offers generic functions to perform select operations on MongoDB 
+ * and Redis databases depending on the query. 
+ * 
+ * @author Sanket Sarang <sanket@blobcity.com>
+ */
+
 import { createHash } from 'crypto';
 import { makeid } from '../../utils.js';
 import { post } from '../../api.js';
-import { SCM_DB_FETCH, SCM_DB_INSERT } from '../../urls.js';
+import { SCM_DB_DELETE, SCM_DB_FETCH, SCM_DB_INSERT } from '../../urls.js';
 import { sendExotelOtp, sendSlackOtp } from '../../controllers/otpController.js';
 
 export const initiateLogin = async (req, res) => {
@@ -76,9 +83,17 @@ export const validateOtp = async (req, res) => {
             return;
         }
 
+        let riderOtp = riderOtpRecords[0];
+
+        //validate OTP to be correct.
+        if(riderOtp.otpHash != otpHash) {
+            res.status(401).send('ER402');
+            return;
+        }
+
         let st = makeid(64);
         let stHash = createHash('md5').update(st).digest('hex');
-        let riderOtp = riderOtpRecords[0];
+        
         let mobHash = riderOtp.mobHash;
 
 
@@ -110,10 +125,7 @@ export const validateOtp = async (req, res) => {
             })
         } else rider = riderArr[0];
 
-
-        /**
-         * TODO: Add entry in Redis.RiderSession
-         */
+        // Add entry in Redis.RiderSession
         await post(SCM_DB_INSERT, {
             db: 'redis',
             table: 'RiderSession',
@@ -147,6 +159,13 @@ export const validateOtp = async (req, res) => {
                 createdAt: rider.createdAt // use for displaying "Members Since" on the app. 
             }
         });
+
+        //TODO: Drop the RiderOtp record
+        post(SCM_DB_DELETE, {
+            db: 'redis',
+            table: 'RiderOtp',
+            id: token
+        })
     } catch (err) {
         console.log(err);
         res.status(500).send('ER500');
