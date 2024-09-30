@@ -14,14 +14,17 @@ import {createHash} from 'crypto';
  * @returns rid if the session token is valid, else null
  */
 export const validateSt = (bearer) => new Promise( async (resolve) => {
+    if(bearer == null || !bearer.startsWith('Bearer ')) {
+        resolve(null);
+        return;
+    }
+
     let st = bearer.replace('Bearer ', '');
     let stHash = createHash('md5').update(st).digest('hex');
-    api.post(URLS.SCM_DB_FETCH, {
+    post(SCM_DB_FETCH, {
         db: 'redis',
         table: 'RiderSession',
-        q: {
-            stHash: stHash
-        }
+        id: stHash
     }).then(result => {
         if(result.length == 1) resolve(result[0].rid);
         else resolve(null);

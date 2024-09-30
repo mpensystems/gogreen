@@ -7,7 +7,7 @@
 
 const redisClient = require("../config/redisClient");
 const { connectToMongo } = require("./db");
-const db = connectToMongo();
+const mongoDb = connectToMongo();
 
 /**
  * Function to fire a generic select query on either Mongo or Redis. 
@@ -142,7 +142,7 @@ const processRedisQuery = async (query) =>
 
 const processMongoQuery = async (query) => new Promise(async (resolve, reject) => {
     try {
-        const collection = db.collection(query.table);
+        const collection = mongoDb.collection(query.table);
         const data = await collection.find(query.condition || {}).toArray();
         resolve(data);
     } catch (error) {

@@ -4,6 +4,7 @@ import {connectToBookingService} from './websocket/bookingServiceClient.js';
 import express from 'express';
 const app = express();
 import { initiateLogin, validateOtp } from './routes/v1/login.js';
+import { fetchKyc, updateKyc } from './routes/v1/kyc.js';
 import pkg from 'body-parser';
 const {json} = pkg;
 import {config} from 'dotenv'
@@ -32,6 +33,8 @@ app.use(json());
 
 app.post('/v1/initiate-login', initiateLogin);
 app.use('/v1/validate-otp', validateOtp);
+app.use('/v1/rider/fetch-kyc', fetchKyc);
+app.use('/v1/rider/update-kyc', updateKyc);
 // app.use('/v1/rider-ws-auth', require('./routes/v1/rider-ws-auth'));
 
 server.on('error', (err) => {

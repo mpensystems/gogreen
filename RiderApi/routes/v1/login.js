@@ -172,11 +172,6 @@ export const validateOtp = async (req, res) => {
     }
 }
 
-export const validateSession = async (req, res) => {
-    let st = req.body.st;
-
-}
-
 const createNewRiderObject = () => {
     return {
         rid: makeid(16),
@@ -191,13 +186,15 @@ const createNewRiderObject = () => {
         zipcode: '',
         city: '',
         district: '',
+        aadhar_no: '',
         photo_id_type: '',
         photo_id: '',
         utility_bill: '',
         photo: '',
         drivers_license: '',
         drivers_license_expiry: '',
-        pan: '',
+        pan_no: '',
+        pan_copy: '',
         vehicle_no: '',
         rc_copy: '',
         vehicle_type: '',
@@ -207,7 +204,7 @@ const createNewRiderObject = () => {
         bank_ifsc: '',
         bank_ac_name: '',
         cancelled_cheque: '',
-        kyc_aproved: '',
+        kyc_approved: '',
         kyc_error_message: '',
         kyc_approvedAt: 0,
         kyc_approvedBy: '',
