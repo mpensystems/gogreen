@@ -31,6 +31,38 @@ export const validateSt = (bearer) => new Promise( async (resolve) => {
     }).catch(err => resolve(null));
 })
 
+export const validateStAndFetchRider = (bearer) => new Promise( async (resolve) => {
+    if(bearer == null || !bearer.startsWith('Bearer ')) {
+        resolve(null);
+        return;
+    }
+
+    let st = bearer.replace('Bearer ', '');
+    let stHash = createHash('md5').update(st).digest('hex');
+    post(SCM_DB_FETCH, {
+        db: 'redis',
+        table: 'RiderSession',
+        id: stHash
+    }).then(result => {
+        let rid = result[0].rid;
+
+        post(SCM_DB_FETCH, {
+            db: 'mongo',
+            table: 'Riders',
+            condition: {
+                rid: rid
+            }
+        }). then(result => {
+            if(result.length == 0) resolve(null);
+            else {
+                let rider = result[0];
+                delete rider._id;
+                resolve(rider);
+            }
+        }).catch(err => resolve(null))
+    }).catch(err => resolve(null));
+})
+
 export function makeid(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
