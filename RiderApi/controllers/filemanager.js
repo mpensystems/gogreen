@@ -1,7 +1,7 @@
 import multer from 'multer'
 import { response } from 'express';
-import {rename} from 'fs'
-import { validateSt} from '../utils.js';
+import { rename, existsSync, readFile } from 'fs'
+import { validateSt, validateStAndFetchRider } from '../utils.js';
 import { SCM_DB_UPDATE } from '../urls.js';
 import { post } from '../api.js';
 const storage = multer.diskStorage({
@@ -57,7 +57,7 @@ export const handleKycDocUpload = async (req, res) => {
         }
 
         //check that uploaded file is less than 5MB
-        if(req.file.size > 5 * 1024 * 1024) {
+        if (req.file.size > 5 * 1024 * 1024) {
             res.status(400).send('ER705,5MB');
             return;
         }
@@ -65,7 +65,7 @@ export const handleKycDocUpload = async (req, res) => {
         //check that the file extension is supported
         let extension = req.file.filename.split('.');
         extension = extension[extension.length - 1];
-        switch(extension.toLowerCase()) {
+        switch (extension.toLowerCase()) {
             case 'png':
             case 'jpeg':
             case 'jpg':
@@ -77,7 +77,7 @@ export const handleKycDocUpload = async (req, res) => {
         }
 
         //check that the mime type is supported
-        switch(req.file.mimetype) {
+        switch (req.file.mimetype) {
             case 'image/png':
             case 'image/bmp':
             case 'image/jpeg':
@@ -90,7 +90,7 @@ export const handleKycDocUpload = async (req, res) => {
 
         //Validate the session token and fetch the corresponding rider object
         let rid = await validateSt(req.headers['authorization']);
-        if(rid == null) {
+        if (rid == null) {
             res.status(401).send('ER401');
             return;
         }
@@ -98,8 +98,8 @@ export const handleKycDocUpload = async (req, res) => {
         //Move the file into the KYC folder
         let oldPath = req.file.path;
         let newPath = process.env.STORAGE_DIR + 'kyc/' + req.file.filename;
-        rename(oldPath, newPath, function(err) {
-            if(err) {
+        rename(oldPath, newPath, function (err) {
+            if (err) {
                 res.status(500).send('ER500');
                 return;
             }
@@ -108,7 +108,7 @@ export const handleKycDocUpload = async (req, res) => {
         const fileId = req.file.filename;
         let updateRow = {};
         updateRow[columnName] = fileId;
-        
+
 
         //update file ID on the rider object
         await post(SCM_DB_UPDATE, {
@@ -124,4 +124,26 @@ export const handleKycDocUpload = async (req, res) => {
     } catch (error) {
         res.status(500).send('ER500')
     }
+}
+
+export const fetchKycDoc = async (req, res) => {
+    const fileid = req.params.fileid;
+    
+    let rider = await validateStAndFetchRider(req.headers['authorization']);
+    if (rider == null) {
+        res.status(401).send('ER401');
+        return;
+    }
+
+    if (rider.photo_id == fileid
+        || rider.utility_bill == fileid
+        || rider.pan_copy == fileid
+        || rider.rc_copy_front == fileid
+        || rider.rc_copy_back == fileid
+        || rider.drivers_license_front == fileid
+        || rider.drivers_license_back == fileid
+        || rider.photo == fileid) {
+            if(existsSync(process.env.STORAGE_DIR + 'kyc/' + fileid)) res.download(process.env.STORAGE_DIR + 'kyc/' + fileid);
+            else res.status(400).send(`ER707,${fileid}`)
+    } else res.status(401).send('ER405');
 }

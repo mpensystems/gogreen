@@ -9,7 +9,7 @@ import pkg from 'body-parser';
 const {json} = pkg;
 import {config} from 'dotenv'
 config();
-import {upload, handleKycDocUpload} from './controllers/fileupload.js'
+import {upload, handleKycDocUpload, fetchKycDoc} from './controllers/filemanager.js'
 
 const PORT = process.env.PORT || 8003;
 
@@ -39,6 +39,7 @@ app.use('/v1/rider/update-kyc', updateKyc);
 // app.use('/v1/rider-ws-auth', require('./routes/v1/rider-ws-auth'));
 
 app.post('/v1/rider/upload-kyc-doc', upload.single('file'), handleKycDocUpload);
+app.get('/v1/rider/view-kyc-doc/:fileid', fetchKycDoc);
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
