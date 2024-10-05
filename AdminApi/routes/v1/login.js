@@ -122,6 +122,7 @@ export const firstRegister = async(req, res) => {
         rows: [
             {
                 aid: makeid(36),
+                role: 'superadmin',
                 username: username,
                 passHash: passHash,
                 first_name: first_name,
@@ -367,4 +368,4 @@ export const activationStatus = async(req, res) => {
 //     }
 // }
 
-//user2: MFh8NsvJx6
+//user2: lzMpJUihI5

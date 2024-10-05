@@ -4,6 +4,7 @@ import express from 'express';
 const app = express();
 import { login, firstRegister, activationStatus, register } from './routes/v1/login.js';
 import { updateProfile, getProfile, changePassword } from './routes/v1/user-profile.js';
+import { listUsers, getUserProfile, resetPassword, adminUpdateUserProfile } from './routes/v1/user-management.js';
 import pkg from 'body-parser';
 const {json} = pkg;
 import {config} from 'dotenv'
@@ -25,6 +26,11 @@ app.get('/v1/activation-status', activationStatus);
 app.post('/v1/user/update-profile', updateProfile);
 app.get('/v1/user/profile', getProfile);
 app.post('/v1/user/change-password', changePassword);
+
+app.get('/v1/user-mgmt/list-users', listUsers);
+app.get('/v1/user-mgmt/:aid/profile', getUserProfile);
+app.post('/v1/user-mgmt/:aid/reset-password', resetPassword);
+app.post('/v1/user-mgmt/:aid/update-profile', adminUpdateUserProfile);
 
 // app.use('/v1/rider/fetch-kyc', fetchKyc);
 // app.use('/v1/rider/update-kyc', updateKyc);

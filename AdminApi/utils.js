@@ -63,6 +63,30 @@ export const getAdminUserFromSt = (bearer) => new Promise( async (resolve) => {
     }).catch(err => resolve(null));
 })
 
+export const validateSuperadminRole = (bearer) => new Promise( async (resolve) => {
+    let adminUser = await getAdminUserFromSt(bearer);
+    if(adminUser == null) return resolve(null);
+
+    if(adminUser.role == 'superadmin') resolve(adminUser);
+    else resolve(null);
+})
+
+export const validateAdminRole = (bearer) => new Promise( async (resolve) => {
+    let adminUser = await getAdminUserFromSt(bearer);
+    if(adminUser == null) return resolve(null);
+
+    if(adminUser.role == 'admin' || adminUser.role == 'superadmin') resolve(adminUser);
+    else resolve(null);
+})
+
+export const validateUserRole = (bearer) => new Promise( async (resolve) => {
+    let adminUser = await getAdminUserFromSt(bearer);
+    if(adminUser == null) return resolve(null);
+
+    if(adminUser.role == 'user' || adminUser.role == 'admin' || adminUser.role == 'superadmin') resolve(adminUser);
+    else resolve(null);
+})
+
 export function makeid(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
