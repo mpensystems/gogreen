@@ -61,28 +61,19 @@ const processMongoQuery = async (query) =>
 
   new Promise(async (resolve, reject) => {
 
-    console.log("insert query in mongodb : ", query);
+    console.log("delete query in mongo : ", query);
 
     const db = await connectToMongo(); 
 
-    const rows = query.rows; 
     const table = query.table; 
 
     try {
 
       const collection = db.collection(table); 
 
-      const insertResults = [];
-      for (const row of rows) {
+      collection.deleteMany(query.condition || {});
 
-        const result = await collection.insertOne(row);
-        insertResults.push({
-          insertedId: result.insertedId,
-          ...row, 
-        });
-      }
-
-      resolve(insertResults); 
+      resolve({status: [true]}); 
     } catch (error) {
       reject(error); 
     } 

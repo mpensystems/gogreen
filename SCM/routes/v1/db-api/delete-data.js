@@ -18,7 +18,6 @@ router.post('/', (req, res) => {
         || query.db == ''
         || !('table' in query)
         || query.table == ''
-        || !('id' in query)  && !('ids' in query)
     ) {
         res.status(500).send('ER500 - Query parameter incorrect or missing');
         return;

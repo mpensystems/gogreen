@@ -19,13 +19,6 @@ const { connectToMongo } = require("./db");
  */
 
 const update = (query) => new Promise(async (resolve, reject) => {
-  /*const query = {
-  db:mongo / redis
-  table: booking / rider 
-  rows:[{name:'mukesh' , roll:'Stack} , {name:'mukesh' , roll:'Stack}]
-  
-}*/
-
   switch (query.db) {
     case "redis":
       resolve(await processRedisQuery(query));
@@ -36,91 +29,10 @@ const update = (query) => new Promise(async (resolve, reject) => {
   }
 });
 
-// const processRedisQuery = async (query) =>
-//   new Promise((resolve, reject) => {
-//     let table = query.table;
-//     let rows = query.rows;
-
-//     let insertStatus = [];
-//     // rows.forEach((row) => {
-//     //   //TODO: perform insert and add status in sequence.
-
-//     //   insertStatus.push(true);
-//     // });
-
-
-
-//     // //perform an insert operation.
-
-//     // resolve(insertStatus); //rows of records. Must always be an array in response.
-
-
-//     try {
-//       for (const row of rows) {
-//         const key = `${table}:${row.id}`; // Create a unique key for each record using an ID
-//         await redisClient.set(key, JSON.stringify(row)); // Store the row as a JSON string
-//         insertStatus.push({ key, ...row }); // Keep track of inserted records
-//       }
-//       resolve(insertStatus); // Resolve with the inserted records
-//     } catch (error) {
-//       reject(error); // Reject the promise if there's an error
-//     }
-//   });
-
-// const processMongoQuery = async (query) =>
-//   new Promise((resolve, reject) => {
-//     let table = query.table;   
-//     let rows = query.rows;
-
-
-//      /*const query = {
-//     db:mongo / redis
-//     table: booking / rider 
-//     rows:[{name:'mukesh' , roll:'Stack} , {name:'mukesh' , roll:'Stack}]
-
-// }*/
-
-
-
-//     let insertStatus = [];
-//     rows.forEach((row) => {
-//       //TODO: perform insert and add status in sequence.
-//       const newDocument = new table(row);
-//       newDocument.save()
-
-//       insertStatus.push(true);
-//     });
-
-//     //perform an insert operation.
-
-//     resolve(insertStatus); //rows of records. Must always be an array in response.
-//   });
-
 
 const processRedisQuery = async (query) =>
   new Promise(async (resolve, reject) => {
     reject('ER500 - Yet to implement');
-    // const table = query.table;
-    // const rows = query.rows;
-
-    // let insertStatus = [];
-
-    // try {
-    //   for (const row of rows) {
-    //     let key = `${table}:${row.key}`;
-    //     if ((row.key == null || key == null)
-    //       || row.value == null) {
-    //       insertStatus.push(false);
-    //       continue;
-    //     }
-    //     await redisClient.hset(key, row.value);
-    //     insertStatus.push(true);
-    //   }
-    //   resolve({ status: insertStatus });
-    // } catch (error) {
-    //   console.error("Error during Redis insert:", error);
-    //   reject(error);
-    // }
   });
 
 
@@ -141,26 +53,16 @@ module.exports = { update };
 
 /**
  * ---------------------------------------------------------
- * SAMPLE REQUEST TO insert Redis.BookingBids
- *
- * {
- *      db: 'redis',
- *      table: 'BookingBids',
- *      rows: [
- *          {},
- *          {}
- *      ]
- * }
- *
- * ---------------------------------------------------------
- * SAMPLE REQUEST TO insert Mongo.Bookings
+ * SAMPLE REQUEST TO update Mongo.Bookings
  *
  * {
  *      db: 'mongo',
  *      table: 'Bookings',
- *      rows: [
- *          {},
- *          {}
- *      ]
+ *      condition: {
+ *        col1: 'value to compare'
+ *      }
+ *      row: {
+ *        //new values to update to
+ *      }
  * }
  */
