@@ -35,3 +35,30 @@ export const getProfile = async(req, res) => {
 
     res.json(adminUser);
 }
+
+export const changePassword = async(req, res) => {
+    let adminUser = await getAdminUserFromSt(req.headers['authorization'])
+    if(adminUser == null) return res.status(401).send('ER401');
+
+    let oldPass = req.body.oldPassword;
+    let newPass = req.body.newPassword;
+
+    let oldPassHash = createHash('md5').update(oldPass).digest('hex');
+    let newPassHash = createHash('md5').update(newPass).digest('hex');
+
+    if(adminUser.passHash != oldPassHash) return res.status(400).send('ER407');
+    if(passwordStrength(newPass).id <= 1) return res.status(400).send('ER708');
+
+    adminUser.passHash = newPassHash;
+
+    await post(SCM_DB_UPDATE, {
+        db: 'mongo',
+        table: 'AdminUsers',
+        condition: {
+            aid: adminUser.aid
+        },
+        row: adminUser
+    })
+
+    res.send();
+}
