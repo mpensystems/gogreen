@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "check-password-strength": "^2.0.10"
+    "check-password-strength": "^2.0.10",
+    "h3-js": "^4.1.0"
   }
 }
