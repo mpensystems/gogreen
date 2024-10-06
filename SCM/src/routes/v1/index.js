@@ -22,5 +22,7 @@ router.use('/db/delete', dbDelete);
 router.use('/db/fetch', dbFetch);
 router.use('/db/update', dbUpdate);
 
+router.use('/config/sysconfig', require('../../../routes/v1/generic/sys-config'));
+router.use('/config/compensation', require('../../../routes/v1/generic/compensation'));
 
 module.exports = router;

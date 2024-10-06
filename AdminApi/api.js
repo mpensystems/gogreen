@@ -28,4 +28,20 @@ const post = async (url, formData, headers) => new Promise((resolve, reject) => 
     })
 })
 
-module.exports = {post}
+const get = async(url, headers) => new Promise((resolve, reject) => {
+    let config = {
+        method: 'get',
+        url: url
+    }
+
+    if(headers != null) config.headers = headers;
+
+    axios.request(config).then(response => {
+        resolve(response.data);
+    }).catch(err => {
+        console.log(err);
+        reject('ER500');
+    })
+})
+
+module.exports = {post, get}
