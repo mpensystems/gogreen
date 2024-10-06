@@ -75,9 +75,11 @@ const createBookingObject = (x) => new Promise(async resolve => {
     //computer drop h3 index based on the drop_geo
     booking.drop_h3i = latLngToCell(booking.drop_geo.lat, booking.drop_geo.lng, 9);
 
+    const distAndTime = await computeTripDistanceAndTime(booking.pickup_geo, booking.drop_geo);
+
     //compute distance and time between pickup_geo and drop_geo
-    booking.trip_distance = 0;
-    booking.trip_time = 0;    
+    booking.trip_distance = distAndTime.dist;
+    booking.trip_time = distAndTime.time;    
 
     resolve(booking);
 })
@@ -92,5 +94,22 @@ const geocodeAddress = (address) => new Promise(async (resolve) => {
     }). catch(err => {
         console.error('Error in geocoding address', err);
         resolve({lat: 0.00, lng: 0.00});
+    })
+})
+
+const computeTripDistanceAndTime = (pickup, drop) => new Promise(async resolve => {
+    let encodedPickupStr = encodeURIComponent(`${pickup.lat},${pickup.lng}`);
+    let encodedDropStr = encodeURIComponent(`${drop.lat},${drop.lng}`);
+    axios.get(`https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${encodedDropStr}&origins=${encodedPickupStr}&key=${process.env.GOOGLE_MAPS_API_KEY}`)
+    .then(response => {
+        let result = response.data;
+        if(result == null || result.rows == null || result.rows.length == 0) return resolve({dist: 5000, time: 20});
+        let elements = result.rows[0].elements;
+        if(elements == null || elements.length == 0) return resolve({dist: 5000, time: 20});
+        let element = elements[0];
+        resolve({dist: element.distance.value, time: Math.round(element.duration.value / 60)});
+    }). catch(err => {
+        console.error('Error in computing trip distance and time', err);
+        resolve({dist: 5000, time: 20});
     })
 })
