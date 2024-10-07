@@ -16,7 +16,7 @@ const dbUpdate = require('../../../routes/v1/db-api/update-data');
 
 
 router.use('/rider', riderRoutes);
-router.use('/booking', bookingRoutes);
+router.use('/bookings', bookingRoutes);
 router.use('/db/insert', dbInsert);
 router.use('/db/delete', dbDelete);
 router.use('/db/fetch', dbFetch);

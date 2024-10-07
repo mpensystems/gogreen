@@ -9,7 +9,7 @@
 import { createHash } from 'crypto';
 import { makeid, validateAdminRole } from '../../utils.js';
 import { post } from '../../api.js';
-import { SCM_DB_DELETE, SCM_DB_FETCH, SCM_DB_INSERT, SCM_DB_UPDATE } from '../../urls.js';
+import { SCM_DB_DELETE, SCM_DB_FETCH, SCM_DB_INSERT, SCM_DB_UPDATE, CREATE_BOOKING } from '../../urls.js';
 import { passwordStrength } from 'check-password-strength'
 import { getAdminUserFromSt, validateSuperadminRole, validateUserRole } from '../../utils.js';
 import {latLngToCell} from "h3-js";
@@ -54,7 +54,13 @@ export const createBooking = async(req, res) => {
         applyBidConfig(booking, defaultBidConfig);
     }
 
-    res.json(booking);
+    //pass on the request to SCM module for further processing
+    try{
+        let bookingRes = await post(CREATE_BOOKING, booking);
+        res.json(bookingRes);
+    } catch(err) {
+        res.status(500).send(err);
+    }
 }
 
 const createBookingObject = (x, bidRules, compensationRules) => new Promise(async resolve => {

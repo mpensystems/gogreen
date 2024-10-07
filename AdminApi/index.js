@@ -8,7 +8,8 @@ import { listUsers, getUserProfile, resetPassword, adminUpdateUserProfile } from
 import { createBooking } from './routes/v1/bookings.js';
 import pkg from 'body-parser';
 const {json} = pkg;
-import {config} from 'dotenv'
+import {config} from 'dotenv';
+import cors from 'cors';
 config();
 
 const PORT = process.env.PORT || 8004;
@@ -18,6 +19,10 @@ const server = app.listen(PORT, () => {
 });
 
 app.use(json());
+let corsOptions = {
+  origin : ['*'],
+}
+app.use(cors(corsOptions));
 
 app.post('/v1/login', login);
 app.post('/v1/first-register', firstRegister);
