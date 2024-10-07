@@ -1,7 +1,5 @@
 min-pay-per-km: 8
 max-pay-per-km: 25
-max-trip-distance-kms: 30
-max-trip-time-mins: 120
 pickup-canceled:
   too-big:
     rider-paid: 10%

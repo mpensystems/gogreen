@@ -25,6 +25,15 @@ exotel:
 rider_login:
   text: "Use {rider_login_otp} OTP to login to GoGreen. DO NOT SHARE."
   dltTemplateId: ""
+bidding_rules:
+  max_trip_distance_kms: 30
+  max_trip_time_mins: 120
+  max_steps: 100
+  min_step_period: 30
+  max_step_period: 300
+  min_bid: 25
+  max_bid: 250
+  max_search_distance: 25
 default_bid_config:
   min_bid: 25
   max_bid: 250

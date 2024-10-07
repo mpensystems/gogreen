@@ -1,3 +1,11 @@
+/**
+ * Functions to create and manage bookings. This layer acts as a data pre-processing before
+ * passing on critical transactional operations to the SCM to handle.
+ * 
+ * @author Sanket Sarang <sanket@blobcity.com>
+ */
+
+
 import { createHash } from 'crypto';
 import { makeid, validateAdminRole } from '../../utils.js';
 import { post } from '../../api.js';
@@ -14,7 +22,9 @@ export const createBooking = async(req, res) => {
     if(adminUser == null) return res.status(401).send('ER401');
 
     const x = req.body;
-    const bidRules = (await getSysConfig()).default_bid_config;
+    const sysconfig = await getSysConfig();
+    const bidRules = sysconfig.bidding_rules;
+    const defaultBidConfig = sysconfig.default_bid_config;
     const compensationRules = await getCompensationConfig();
 
     let booking = await createBookingObject(x, bidRules, compensationRules);
@@ -32,13 +42,16 @@ export const createBooking = async(req, res) => {
     if(booking.drop_mobile == '') return res.status(400).send('ER704,drop_mobile');
 
     //validate trip distance and time are within rule limits
-    if(booking.trip_distance / 1000 > compensationRules['max-trip-distance-kms']) res.status(400).send(`ER213,${booking.trip_distance/1000},${compensationRules['max-trip-distance-kms']}`);
-    if(booking.trip_time > compensationRules['max-trip-time-mins']) res.status(400).send(`ER214,${booking.trip_time},${compensationRules['max-trip-time-mins']}`);
+    if(booking.trip_distance / 1000 > bidRules.max_trip_distance_kms) res.status(400).send(`ER213,${booking.trip_distance/1000},${bidRules.max_trip_distance_kms}`);
+    if(booking.trip_time > bidRules.max_trip_time_mins) res.status(400).send(`ER214,${booking.trip_time},${bidRules.max_trip_time_mins}`);
 
-    //set the bid config on the booking
+    //set the specified bid config on the booking
     if(x.bidConfig != null) {
         let configError = isBidConfigValid(x.bidConfig, bidRules, compensationRules, booking);
         if(configError != null) return res.status(400).send(configError);
+        applyBidConfig(booking, x.bidConfig);
+    } else { //set a default bid config on the booking
+        applyBidConfig(booking, defaultBidConfig);
     }
 
     res.json(booking);
@@ -156,6 +169,11 @@ const computeTripDistanceAndTime = (pickup, drop) => new Promise(async resolve =
     })
 })
 
+/**
+ * 
+ * Checks for basic rules of bid config against acceptable parameters
+ * @returns null if all rules are satisified, else the error string to report as error.
+ */
 const isBidConfigValid = (bc, bidRules, compensationRules, booking) => {
     if(bc.min_bid == null) return 'ER704,bidConfig.min_bid';
     if(bc.max_bid == null) return 'ER704,bidConfig.max_bid';
@@ -165,26 +183,36 @@ const isBidConfigValid = (bc, bidRules, compensationRules, booking) => {
 
     if(bc.min_bid < bidRules.min_bid) return 'ER704,bidConfig.min_bid MIN VALUE BREACH';
     if(bc.max_bid > bidRules.max_bid) return 'ER704,bidConfig.max_bid MAX VALUE BREACH';
+    if(bc.max_bid < bc.min_bid) return 'ER704,bidConfig.max_bid LESS THAN min_bid';
+    if(bc.steps > bidRules.max_stes) return 'ER704,bidConfig.steps MAX VALUE BREACH';
+    if(bc.steps < 0) return 'ER704,bidConfig.steps LESS THAN 0';
+    if(bc.step_period < bidRules.min_step_period) return 'ER704,bidConfig.step_period MIN VALUE BREACH';
+    if(bc.step_period > bidRules.max_step_period) return 'ER704,bidConfig.step_period MAX VALUE BREACH';
+    
+    if(bc.start_dist < 0) return 'ER704,bidConfig.start_dist LESS THAN 0';
+    if(bc.start_dist > bidRules.max_search_dist) return 'ER704,bidConfig.start_dist MAX VALUE BREACH';
+    if(bc.dist_increment <= 0) return 'ER704,bidConfig.dist_increment LESS THAN OR EQ 0';
+    if(bc.start_dist + bc.dist_increment * bc.steps > bidRules.max_search_dist) return 'ER704,bidConfig.start_dist MAX VALUE BREACH';
     
     return null;
 }
 
-const generateBidConfig = (bc, bidRules, compensationRules, booking) => {
-    let bidConfig =  {
-		"bid": "",
-		"min_bid": 0,
-		"max_bid": 0,
-		"current_bid": "",
-		"steps": "",
-		"step_period": "",
-		"dist_increment": 1,
-		"start_dist": "",
-		"current_step": 0,
-		"current_dist": 200,
-		"status": "",
-		"h3is": [],
-		"started_at": 0,
-		"updated_at": 0,
-		"ended_at": 0
-	}
+const applyBidConfig = (booking, bidConfig) => {
+    booking.bidConfig = {
+        bid: booking.bid,
+        min_bid: bidConfig.min_bid,
+        max_bid: bidConfig.max_bid,
+        current_bid: bidConfig.min_bid,
+        steps: bidConfig.steps,
+        step_period: bidConfig.step_period,
+        dist_increment: bidConfig.dist_increment,
+        start_dist: bidConfig.start_dist,
+        current_step: 1,
+        current_dist: bidConfig.start_dist,
+        status: 'active',
+        h3is: [],
+        started_at: Date.now(),
+        updated_at: Date.now(),
+        ended_at: 0
+    }
 }
