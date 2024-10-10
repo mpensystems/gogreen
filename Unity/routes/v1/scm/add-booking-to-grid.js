@@ -8,16 +8,12 @@ const mutex = new Mutex();
 router.post('/', (req, res) => {
     const bid = req.body.bid;
     const grid = req.body.grid;
-
-    console.log(`bid: ${bid}`);
-    console.log(`grid: ${grid}`);
-
+    
     if (bid == null || grid == null || grid.length == 0) return res.status(500).send('ER500');
 
     mutex.acquire().then(async (release) => {
         try {
             let promises = grid.map(h3i => new Promise(async (resolve) => {
-                console.log('H3I: ' + h3i);
                 let h3iRecords = await api.post(URLS.SCM_DB_FETCH, {
                     db: 'redis',
                     table: 'Grid',

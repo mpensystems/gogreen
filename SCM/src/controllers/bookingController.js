@@ -8,8 +8,6 @@ exports.createBooking = async (req, res) => {
     let booking = req.body;
     const grid = h3.gridDisk(booking.pickup_h3i, booking.bidConfig.start_dist);
     booking.bidConfig.h3is = grid;
-
-    //TODO: Publish the booking & bids to all channels on the grid.
     
     try {
         //Add booking entry in Mongo.Bookings
@@ -42,15 +40,4 @@ exports.createBooking = async (req, res) => {
         console.log(err);
         res.status(500).send('ER500');
     }
-
-    //Add cache entry of booking into Redis.Bookings with auto expiry set to end of bidding period
-
-    /**
-     * Process without Kafka
-     * 1. Add bid in redis mapped to the key, which is h3index.
-     * 2. Create a cache of bookings in Redis with an auto expiry set to the end of bidding period
-     * 3. 
-     */
-
-    
 }
