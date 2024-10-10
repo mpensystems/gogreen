@@ -1,34 +1,39 @@
-var express = require('express');
-var router = express.Router();
-var request = require('request');
-var crypto = require('crypto');
-const utils = require('../../utils');
+import { createHash } from 'crypto';
+import { makeid, validateSt } from '../../utils.js';
+import { post } from '../../api.js';
+import { SCM_DB_INSERT } from '../../urls.js';
 
-router.get('/', async (req, res) => {
-    let bearer = req.headers.Authorization;
+export const initiateRiderWsAuth = async (req, res) => {
+    let bearer = req.headers['authorization'];
     if(bearer == null) {
         res.status(401).send('ER403');
         return;
     }
 
-    let rid = await utils.validateSt(bearer);
+    let rid = await validateSt(bearer);
     if(rid == null) {
         res.status(401).send('ER401');
         return;
     }
 
-    let auth = utils.makeid(36);
+    let auth = makeid(36);
+    let authHash = createHash('md5').update(auth).digest('hex')
 
     let riderWsAuth = {
         rid:rid,
-        auth: crypto.createHash('md5').update(auth).digest('hex'),
         created_at: Date.now()
     }
 
-    //TODO: Insert riderWsAuth in Redis.RiderWsAuth table
-    
+    await post(SCM_DB_INSERT, {
+        db: 'redis',
+        table: 'RiderWsAuth',
+        rows: [
+            {
+                key: authHash,
+                value: riderWsAuth
+            }
+        ]
+    })
 
     res.json({auth: auth});
-})
-
-module.exports = router;
+}

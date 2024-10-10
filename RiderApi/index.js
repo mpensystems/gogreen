@@ -10,6 +10,7 @@ const {json} = pkg;
 import {config} from 'dotenv'
 config();
 import {upload, handleKycDocUpload, fetchKycDoc} from './controllers/filemanager.js'
+import { initiateRiderWsAuth } from './routes/v1/rider-ws-auth.js';
 
 const PORT = process.env.PORT || 8003;
 
@@ -36,7 +37,7 @@ app.post('/v1/initiate-login', initiateLogin);
 app.use('/v1/validate-otp', validateOtp);
 app.use('/v1/rider/fetch-kyc', fetchKyc);
 app.use('/v1/rider/update-kyc', updateKyc);
-// app.use('/v1/rider-ws-auth', require('./routes/v1/rider-ws-auth'));
+app.use('/v1/rider-ws-auth', initiateRiderWsAuth);
 
 app.post('/v1/rider/upload-kyc-doc', upload.single('file'), handleKycDocUpload);
 app.get('/v1/rider/view-kyc-doc/:fileid', fetchKycDoc);
