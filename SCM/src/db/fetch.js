@@ -83,7 +83,8 @@ const processRedisQuery = async (query) =>
         if(query.id != null) {
             let key = `${query.table}:${query.id}`;
             let data = await redisClient.hgetall(key);
-            resolve([data]);
+            if(Object.keys(data).length == 0) resolve([]);
+            else resolve([data]);
         } else if(query.q != null) {
             //TODO: Run a seach query on an redis column index
             reject('ER500');

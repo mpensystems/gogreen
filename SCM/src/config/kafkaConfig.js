@@ -2,7 +2,7 @@ const { Kafka } = require('kafkajs');
 
 const kafka = new Kafka({
   clientId: 'go-green-client',
-  brokers: ['localhost:9092'] 
+  brokers: [process.env.KAFKA_URL] 
 });
 
 const admin = kafka.admin();
@@ -17,6 +17,11 @@ const connectKafka = async () => {
   await producer.connect();
   console.log("kafka producer connected successfully");
 };
+
+const listTopics = async () => {
+  const existingTopics = await admin.listTopics();
+  console.log(existingTopics);
+}
 
 
  // Disconnect from Kafka.
@@ -90,4 +95,5 @@ module.exports = {
   disconnectKafka,
   createKafkaTopic,
   produceMessage,
+  listTopics
 };

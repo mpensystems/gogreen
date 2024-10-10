@@ -3,6 +3,8 @@ const connectDB = require("./src/db/db.js");
 const cors = require('cors');
 const allRoutes = require('./src/routes/v1/index.js');
 const multer = require('multer');
+const kafka = require('./src/controllers/kafkaService.js');
+// const kafka = require('./src/config/kafkaConfig.js');
 
 
 
@@ -31,3 +33,9 @@ app.listen(PORT,()=>{
 
 // connectDB();
 connectDB.connectToMongo();
+
+// kafka.connectKafka();
+// setTimeout(() => kafka.listTopics(), 3000);
+// // ;
+
+// kafka.createTopic('test');

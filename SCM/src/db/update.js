@@ -32,7 +32,25 @@ const update = (query) => new Promise(async (resolve, reject) => {
 
 const processRedisQuery = async (query) =>
   new Promise(async (resolve, reject) => {
-    reject('ER500 - Yet to implement');
+    const table = query.table; 
+    const rows = query.rows;    
+    let updateStatus = [];
+    try {
+        for (const row of rows) {
+            let key = `${table}:${row.key}`;
+            if((row.key == null || key == null) 
+            || row.value == null) {
+              updateStatus.push(false);
+              continue;
+            }
+            await redisClient.hset(key, row.value);
+            updateStatus.push(true); 
+        }
+        resolve({status: updateStatus}); 
+    } catch (error) {
+        console.error("Error during Redis insert:", error);
+        reject(error); 
+    }
   });
 
 

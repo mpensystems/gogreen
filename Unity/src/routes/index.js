@@ -16,5 +16,6 @@ router.use('/h3IndexRoutes', h3IndexRoutes);
 router.use('/biddingRoutes',biddingRoutes);
 // router.use('/booking', bookingRoutes);
 
+router.use('/scm/add-booking-to-grid', require('../../routes/v1/scm/add-booking-to-grid'));
 
 module.exports = router;

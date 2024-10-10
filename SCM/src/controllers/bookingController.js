@@ -1,8 +1,56 @@
 
+const h3 = require("h3-js");
+const api = require("../../api.js");
+const urls = require('../../urls.js');
+const insert = require('../db/insert.js');
 
 exports.createBooking = async (req, res) => {
     let booking = req.body;
+    const grid = h3.gridDisk(booking.pickup_h3i, booking.bidConfig.start_dist);
+    booking.bidConfig.h3is = grid;
 
-    console.log(JSON.stringify(booking));
-    res.json(booking);
+    //TODO: Publish the booking & bids to all channels on the grid.
+    
+    try {
+        //Add booking entry in Mongo.Bookings
+        await insert.insert({
+            db: 'mongo',
+            table: 'Bookings',
+            rows: [booking]
+        })
+
+        //Add entry in Redis.BookingBids to start the bidding process
+        await insert.insert({
+            db: 'redis',
+            table: 'BookingBids',
+            rows: [
+                {
+                    key: booking.bid,
+                    value: booking.bidConfig
+                }
+            ]  
+        })
+
+        //Invoke unity api to add bid to grid
+        await api.post(urls.ADD_BOOKING_TO_GRID, {
+            bid: booking.bid,
+            grid: grid
+        })
+
+        res.json(booking);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('ER500');
+    }
+
+    //Add cache entry of booking into Redis.Bookings with auto expiry set to end of bidding period
+
+    /**
+     * Process without Kafka
+     * 1. Add bid in redis mapped to the key, which is h3index.
+     * 2. Create a cache of bookings in Redis with an auto expiry set to the end of bidding period
+     * 3. 
+     */
+
+    
 }
