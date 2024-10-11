@@ -10,6 +10,8 @@ import { post } from '../../api.js';
 import { SCM_DB_DELETE, SCM_DB_FETCH, SCM_DB_INSERT, SCM_DB_UPDATE } from '../../urls.js';
 import { validateSt } from '../../utils.js';
 import { response } from 'express';
+// const moment = require('moment');
+import moment from 'moment'
 
 export const fetchKyc = async (req, res) => {
     let rid = await validateSt(req.headers['authorization'])
@@ -56,6 +58,7 @@ export const updateKyc = async(req, res) => {
         res.status(400).send('ER703,country_code');
         return;
     }
+    if(formData.dob != '' && !moment(formData.dob, 'DD-MM-YYYY').isValid()) return res.status(400).send('ER704,dob');
     
     //fetch current rider object
     let riderArr = await post(SCM_DB_FETCH, {
@@ -77,18 +80,21 @@ export const updateKyc = async(req, res) => {
 
     updatedRow.first_name = formData.first_name;
     updatedRow.last_name = formData.last_name;
+    updatedRow.gender = formData.gender;
+    updatedRow.dob = formData.dob;
     updatedRow.address_line1 = formData.address_line1;
     updatedRow.address_line2 = formData.address_line2;
     updatedRow.flat_no = formData.flat_no;
     updatedRow.zipcode = formData.zipcode;
     updatedRow.city = formData.city;
     updatedRow.district = formData.district;
+    updatedRow.state = formData.state;
     updatedRow.aadhar_no = formData.aadhar_no;
     updatedRow.drivers_license_expiry = formData.drivers_license_expiry;
     updatedRow.pan_no = formData.pan_no;
     updatedRow.vehicle_no = formData.vehicle_no;
     updatedRow.vehicle_type = formData.vehicle_type;
-    updatedRow.bank_ac = formData.back_ac;
+    updatedRow.bank_ac = formData.bank_ac;
     updatedRow.bank_ifsc = formData.bank_ifsc;
     updatedRow.bank_ac_name = formData.bank_ac_name;
 

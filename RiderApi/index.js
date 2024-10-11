@@ -55,3 +55,35 @@ server.on('error', (err) => {
   }
 });
 
+
+// import kafkapkg from 'kafkajs';
+// const { Kafka } = kafkapkg;
+
+// let kafka = new Kafka({
+//   clientId: "my-app",
+//   brokers: ["134.209.149.111:9092"]
+// });
+
+// async function init() {
+//   const admin = kafka.admin();
+//   console.log("Admin connecting...");
+//   admin.connect();
+//   console.log("Admin Connection Success...");
+
+//   console.log("Creating Topic [booking-bids]");
+//   await admin.createTopics({
+//     topics: [
+//       {
+//         topic: "booking-bids",
+//         numPartitions: 2,
+//       },
+//     ],
+//   });
+//   console.log("Topic Created Success [rider-updates]");
+
+//   console.log("Disconnecting Admin..");
+//   await admin.disconnect();
+// }
+
+
+// init();
