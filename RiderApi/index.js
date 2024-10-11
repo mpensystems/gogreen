@@ -11,6 +11,9 @@ import {config} from 'dotenv'
 config();
 import {upload, handleKycDocUpload, fetchKycDoc} from './controllers/filemanager.js'
 import { initiateRiderWsAuth } from './routes/v1/rider-ws-auth.js';
+import { wss } from './rider-ws.js';
+
+
 
 const PORT = process.env.PORT || 8003;
 
@@ -51,3 +54,4 @@ server.on('error', (err) => {
     process.exit(1);
   }
 });
+

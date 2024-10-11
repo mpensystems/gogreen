@@ -18,9 +18,11 @@ export const initiateRiderWsAuth = async (req, res) => {
 
     let auth = makeid(36);
     let authHash = createHash('md5').update(auth).digest('hex')
+    let stHash = createHash('md5').update(bearer.replace('Bearer ', '')).digest('hex')
 
     let riderWsAuth = {
         rid:rid,
+        stHash: stHash,
         created_at: Date.now()
     }
 
