@@ -3,6 +3,7 @@ const h3 = require("h3-js");
 const api = require("../../api.js");
 const urls = require('../../urls.js');
 const insert = require('../db/insert.js');
+const kafka = require('../kafkaService.js');
 
 exports.createBooking = async (req, res) => {
     let booking = req.body;
@@ -28,6 +29,8 @@ exports.createBooking = async (req, res) => {
                 }
             ]  
         })
+
+        kafka.broadcastNewBooking(booking);
 
         //Invoke unity api to add bid to grid
         await api.post(urls.ADD_BOOKING_TO_GRID, {

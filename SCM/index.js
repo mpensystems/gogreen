@@ -3,7 +3,7 @@ const connectDB = require("./src/db/db.js");
 const cors = require('cors');
 const allRoutes = require('./src/routes/v1/index.js');
 const multer = require('multer');
-const kafka = require('./src/controllers/kafkaService.js');
+const kafka = require('./src/kafkaService.js');
 // const kafka = require('./src/config/kafkaConfig.js');
 
 

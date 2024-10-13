@@ -2,7 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-const riderRoutes = require('../../routes/v1/riderRoutes');
+// const riderRoutes = require('../../routes/v1/riderRoutes');
 const bookingRoutes = require('../../routes/v1/bookingRoutes');
 const dbInsert = require('../../../routes/v1/db-api/insert-data');
 const dbDelete = require('../../../routes/v1/db-api/delete-data');
@@ -15,7 +15,7 @@ const dbUpdate = require('../../../routes/v1/db-api/update-data');
 
 
 
-router.use('/rider', riderRoutes);
+// router.use('/rider', riderRoutes);
 router.use('/bookings', bookingRoutes);
 router.use('/db/insert', dbInsert);
 router.use('/db/delete', dbDelete);

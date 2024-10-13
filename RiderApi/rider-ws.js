@@ -6,6 +6,7 @@ import { SCM_DB_FETCH, SCM_DB_INSERT } from './urls.js';
 import { latLngToCell } from "h3-js";
 import { response } from 'express';
 import { makeid } from './utils.js';
+import kafka from 'kafka-node';
 
 // Create a WebSocket server
 export const wss = new WebSocketServer({ port: 9000 });
@@ -32,6 +33,7 @@ wss.on('connection', (ws) => {
                 case 'auth':
                     if (rid != undefined) return ws.send(JSON.stringify({ cmd: 'error', error_code: 'ER408', error_message: 'Cannot reattempt auth' }));
                     rid = await processAuth(id, p);
+                    riderMap.set(rid, ws);
                     ws.send(JSON.stringify({ cmd: 'ack', id: id }));
                     break;
                 case 'loc':
@@ -74,6 +76,27 @@ wss.on('connection', (ws) => {
         }
     });
 });
+
+//Start a kafka listener for messages to send on the sockets
+const client = new kafka.KafkaClient({ kafkaHost: '134.209.149.111:29092' });
+const Consumer = kafka.Consumer;
+export const consumer = new Consumer(client, [{ topic: 'booking-bids' }, { topic: 'new-bookings' }]);
+consumer.on('message', (message) => {
+    let value = JSON.parse(message.value);
+    switch (value.cmd) {
+        case 'bid-change':
+            broadcastBidChange(value.p);
+            break;
+        case 'new-booking':
+            broadcastNewBooking(value.p);
+            break;
+    }
+})
+
+consumer.on('error', (err) => {
+    console.log('Error on Kafka consumer');
+    console.error(err);
+})
 
 const processAuth = (id, p) => new Promise(async (resolve, reject) => {
     let authHash = createHash('md5').update(p.auth).digest('hex')
@@ -125,15 +148,11 @@ const processH3iUpdate = (oldH3i, newH3i, rid) => new Promise(async (resolve) =>
         oldRiders.splice(oldRiders.indexOf(rid), 1);
         h3iMap.set(oldH3i, oldRiders);
     }
-    
+
     if (!h3iMap.has(newH3i)) h3iMap.set(newH3i, []);
     let newRiders = h3iMap.get(newH3i);
-    newRiders.push(newH3i);
-
-    //this maynot be required if the arrays get edited by reference.
-    
+    newRiders.push(rid);
     h3iMap.set(newH3i, newRiders);
-
     resolve();
 })
 
@@ -174,3 +193,44 @@ const fetchBookingsForH3i = (h3i) => new Promise(async (resolve) => {
 })
 
 const send = (ws, obj) => ws.send(JSON.stringify(obj));
+
+const broadcastNewBooking = (booking) => new Promise(async (resolve) => {
+    let id = makeid(6);
+    let h3is = Array.isArray(booking.bidConfig.h3is) ? booking.bidConfig.h3is : booking.bidConfig.h3is.split(',');
+    h3is.forEach(h3i => {
+        let rids = h3iMap.get(h3i);
+        if (rids == null) return;
+        rids.forEach(rid => {
+            const ws = riderMap.get(rid);
+            if (ws == null) return;
+            send(ws, {
+                cmd: 'new-booking',
+                id: id,
+                p: booking
+            })
+        })
+    })
+    resolve();
+})
+
+const broadcastBidChange = (bidConfig) => new Promise(async (resolve) => {
+    let id = makeid(6);
+    let h3is = Array.isArray(bidConfig.h3is) ? bidConfig.h3is : bidConfig.h3is.split(',');
+    if(bidConfig.h3is == null) return resolve();
+    h3is.forEach(h3i => {
+        let rids = h3iMap.get(h3i);
+        if (rids == null) return;
+        rids.forEach(rid => {
+            const ws = riderMap.get(rid);
+            if (ws == null) {
+                return;
+            }
+            send(ws, {
+                cmd: 'bid-change',
+                id: id,
+                p: bidConfig
+            })
+        })
+    })
+    resolve();
+})

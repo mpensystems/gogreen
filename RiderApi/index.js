@@ -1,6 +1,5 @@
 import {startWebSocketServer} from './websocket/webSocketServer.js'; // Correct function name
 import {connectToBookingService} from './websocket/bookingServiceClient.js';
-
 import express from 'express';
 const app = express();
 import { initiateLogin, validateOtp } from './routes/v1/login.js';
@@ -14,6 +13,27 @@ import { initiateRiderWsAuth } from './routes/v1/rider-ws-auth.js';
 import { wss } from './rider-ws.js';
 
 
+
+// import {consumer} from './controllers/kafkaController.js' //required to activate kafka listener
+
+// const kafka = require('kafka-node')
+// //     Producer = kafka.Producer,
+// //     client = new kafka.KafkaClient(),
+// //     producer = new Producer(client);
+
+// import kafka from 'kafka-node';
+
+// const client = new kafka.KafkaClient({kafkaHost: '134.209.149.111:29092'});
+// const Consumer = kafka.Consumer;
+
+// const consumer = new Consumer(client, [{topic: 'booking-bids'}]);
+// consumer.on('message', (message) => {
+//   console.log('Received message: ' + JSON.stringify(message));
+//  })
+
+//  consumer.on('error', (err) => {
+//   console.error(err);
+//  })
 
 const PORT = process.env.PORT || 8003;
 
@@ -56,6 +76,8 @@ server.on('error', (err) => {
 });
 
 
+
+
 // import kafkapkg from 'kafkajs';
 // const { Kafka } = kafkapkg;
 
@@ -87,3 +109,7 @@ server.on('error', (err) => {
 
 
 // init();
+
+
+import {latLngToCell} from "h3-js";
+console.log(latLngToCell(19.1122228, 72.8673215, 9))

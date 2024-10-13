@@ -216,6 +216,8 @@ const applyBidConfig = (booking, bidConfig) => {
         current_step: 1,
         current_dist: bidConfig.start_dist,
         status: 'active',
+        lat: booking.pickup_geo.lat,
+        lng: booking.pickup_geo.lng,
         h3is: [],
         started_at: Date.now(),
         updated_at: Date.now(),

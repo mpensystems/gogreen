@@ -127,29 +127,28 @@ const processRedisQuery = async (query) =>
 const processMongoQuery = async (query) =>
 
   new Promise(async (resolve, reject) => {
-
-    console.log("insert query in mongodb : ", query);
-
     const db = await connectToMongo(); 
 
     const rows = query.rows; 
-    const table = query.table; 
+    const table = query.table;
+    const replace = query.replace; 
 
     try {
-
       const collection = db.collection(table); 
-
       const insertResults = [];
       for (const row of rows) {
-
-        const result = await collection.insertOne(row);
-        console.log(result);
+        let result;
+        if(replace != null && replace && row._id != null) {
+          result = await collection.replaceOne(row);
+        } else {
+          result = await collection.insertOne(row);
+        }
+        
         insertResults.push({
           insertedId: result.insertedId,
           ...row, 
         });
       }
-
       resolve(insertResults); 
     } catch (error) {
       reject(error); 

@@ -15,7 +15,7 @@ config();
 const PORT = process.env.PORT || 8004;
 
 const server = app.listen(PORT, () => {
-  console.log(`Rider_Api Service is running on port ${PORT}`);
+  console.log(`Admin_Api Service is running on port ${PORT}`);
 });
 
 app.use(json());

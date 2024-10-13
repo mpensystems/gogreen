@@ -1,9 +1,10 @@
-
 const express = require('express');
 const cron = require('./crons')
 const app = express();
 const allRoutes = require('./src/routes/index');
+const kafka = require('./services/kafkaService.js');
 require('dotenv').config();
+require('./services/cron.js');
 
 const PORT = process.env.PORT || 8000;
 console.log("check port ",process.env.PORT);
@@ -26,3 +27,7 @@ server.on('error', (err) => {
     process.exit(1);
   }
 });
+
+
+const h3 = require('h3-js');
+console.log(h3.latLngToCell(19.1122228, 72.8673215, 9))

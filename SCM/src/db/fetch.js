@@ -33,54 +33,22 @@ const fetch = async (query) => new Promise(async (resolve, reject) => {
     }
 })
 
-// const processRedisQuery = async (query) => new Promise((resolve, reject) => {
-//     let table = query.table;
-
-//     //run the query on Redis resolve or reject depending on outcome
-
-//     resolve([]); //rows of records. Must always be an array in response.
-// })
-
-
-
-// for conditions 
-
-// const processRedisQuery = async (query) => 
-//     new Promise(async (resolve, reject) => {
-//         console.log(" query in redis : ",query);
-//       const table = query.table; // The collection/table name (e.g., 'bidding')
-//       const conditions = query.conditions; // Conditions for fetching records (e.g., { id: '12345' })
-
-//       let fetchedData = [];
-
-//       try {
-//         // Create a unique key for the record based on the provided conditions
-//         const key = `${table}:${conditions.id}`; 
-
-//         // Fetch the data from Redis
-//         const data = await redisClient.hgetall(key); // Fetch the hash associated with the key
-
-//         if (data) {
-//           // If data exists, convert it to the appropriate format
-//           fetchedData.push({
-//             id: conditions.id, // Add the ID
-//             ...data // Spread the fetched data
-//           });
-//         }
-//         console.log("Fetched Data: ", fetchedData);
-//         resolve(fetchedData); // Resolve with the fetched records
-//       } catch (error) {
-//         reject(error); // Reject the promise if there's an error
-//       }
-//     });
-
-
-
-
-
 const processRedisQuery = async (query) =>
     new Promise(async (resolve, reject) => {
-        if(query.id != null) {
+        if(query.id == '*') {
+            //need to pull data corresponding to all keys starting with table:* pattern
+            redisClient.keys(`${query.table}:*`, async (err, keys) => {
+                let promises = keys.map(key => new Promise(async (resolve) => {
+                    let data = await redisClient.hgetall(key);
+                    if(Object.keys(data).length == 0) resolve(null);
+                    else resolve(data);
+                }));
+                
+                let data = await Promise.all(promises);
+                data = data.filter(x => x != null);
+                resolve(data);
+            })
+        } else if(query.id != null) {
             let key = `${query.table}:${query.id}`;
             let data = await redisClient.hgetall(key);
             if(Object.keys(data).length == 0) resolve([]);
@@ -91,54 +59,7 @@ const processRedisQuery = async (query) =>
         } else {
             reject('ER500');
         }
-
-        // const table = query.table;
-        // const conditions = query.conditions;
-
-        // let fetchedData = [];
-
-        // try {
-        //     if (conditions && conditions.id) {
-        //         const key = `${table}:${conditions.id}`;
-        //         const data = await redisClient.hgetall(key);
-        //         if (data) {
-        //             fetchedData.push({
-        //                 id: conditions.id,
-        //                 ...data
-        //             });
-        //         }
-        //     } else {
-        //         const keys = await redisClient.keys(`${table}:*`);
-        //         for (const key of keys) {
-        //             const data = await redisClient.hgetall(key);
-        //             if (data) {
-        //                 fetchedData.push({
-        //                     id: key.split(":")[1],
-        //                     ...data
-        //                 });
-        //             }
-        //         }
-        //     }
-
-        //     console.log("Fetched Data:", fetchedData);
-        //     resolve(fetchedData);
-        // } catch (error) {
-        //     console.error("Error fetching data from Redis:", error);
-        //     reject(error);
-        // }
     });
-
-
-
-// const processMongoQuery = async (query) => new Promise((resolve, reject) => {
-//     let table = query.table;
-
-//     //run the query on Mongo and resolve or reject depending on outcome
-
-//     resolve([]); //rows of records. Must always be an array in response.
-// })
-
-
 
 
 const processMongoQuery = async (query) => new Promise(async (resolve, reject) => {
