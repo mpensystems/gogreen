@@ -38,6 +38,8 @@ const processRedisQuery = async (query) =>
         if(query.id == '*') {
             //need to pull data corresponding to all keys starting with table:* pattern
             redisClient.keys(`${query.table}:*`, async (err, keys) => {
+                if(query.keysOnly) return resolve(keys.map(k => k.replace(`${query.table}:`, '')));
+
                 let promises = keys.map(key => new Promise(async (resolve) => {
                     let data = await redisClient.hgetall(key);
                     if(Object.keys(data).length == 0) resolve(null);
