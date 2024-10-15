@@ -170,8 +170,9 @@ const fetchBookingsForH3i = (h3i) => new Promise(async (resolve) => {
             let result = await post(SCM_DB_FETCH, {
                 db: 'mongo',
                 table: 'Bookings',
-                q: {
-                    bid: bid
+                condition: {
+                    bid: bid,
+                    status: 'active'
                 }
             })
 
