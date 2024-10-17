@@ -7,15 +7,21 @@ const h3 = require('h3-js');
 
 const processUnity = (command) => {
     mutex.acquire().then(async (release) => {
-        switch (command.cmd) {
-            case 'bid-step':
-                await bidNextStep(command.p);
-                break;
-            case 'accept-booking':
-                await bookingToTrip(command.p);
-                break;
+        try {
+            switch (command.cmd) {
+                case 'bid-step':
+                    await bidNextStep(command.p);
+                    break;
+                case 'accept-booking':
+                    await bookingToTrip(command.p);
+                    break;
+            }
+        } catch (err) {
+            console.error(err)
+        } finally {
+            release();
         }
-        release();
+
     })
 }
 
@@ -29,7 +35,7 @@ const bidNextStep = (x) => new Promise(async (resolve, reject) => {
         x.updated_at = Date.now();
 
         //end the bidding process, as all steps have been completed.
-        if(x.current_step == x.steps) {
+        if (x.current_step == x.steps) {
             x.status = 'ended';
             x.ended_at = Date.now();
             await saveBidConfig(x);
@@ -37,7 +43,7 @@ const bidNextStep = (x) => new Promise(async (resolve, reject) => {
             return;
         }
 
-        let {max_bid, min_bid, steps, current_dist, current_step,dist_increment, current_bid} = x;
+        let { max_bid, min_bid, steps, current_dist, current_step, dist_increment, current_bid } = x;
         max_bid = parseInt(max_bid);
         min_bid = parseInt(min_bid);
         steps = parseInt(steps);
@@ -48,7 +54,7 @@ const bidNextStep = (x) => new Promise(async (resolve, reject) => {
         let bidIncrease = Math.round((x.max_bid = x.min_bid) / x.steps);
         x.current_step = current_step + 1;
         x.current_bid = current_bid + bidIncrease;
-        if(x.current_bid > max_bid) x.current_bid = max_bid;
+        if (x.current_bid > max_bid) x.current_bid = max_bid;
         x.current_dist = current_dist + dist_increment;
         let oldH3is = x.h3is.split(',');
         let lat = parseFloat(x.lat);
@@ -66,9 +72,9 @@ const bidNextStep = (x) => new Promise(async (resolve, reject) => {
 
         x.h3is = newH3is;
         await saveBidConfig(x);
-    } catch(err) {
+    } catch (err) {
         console.error(err);
-    }finally {
+    } finally {
         kafka.broadcastBidChange(x);
         resolve();
     }
@@ -79,7 +85,7 @@ const saveBidConfig = (bidConfig) => new Promise(async (resolve, reject) => {
         let bookings = await api.post(URLS.SCM_DB_FETCH, {
             db: 'mongo',
             table: 'Bookings',
-            q: {
+            condition: {
                 bid: bidConfig.bid
             }
         })
@@ -134,7 +140,7 @@ const removeBookingFromGrid = (bid, grid) => new Promise(async resolve => {
             id: h3i
         })
 
-        if(results == null || results.length == 0) return resolve();
+        if (results == null || results.length == 0) return resolve();
 
         let record = results[0];
         console.log(JSON.stringify(record));

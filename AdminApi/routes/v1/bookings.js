@@ -63,6 +63,63 @@ export const createBooking = async(req, res) => {
     }
 }
 
+export const getLatestBookings = async(req, res) => {
+    let adminUser = await validateUserRole(req.headers['authorization']);
+    if(adminUser == null) return res.status(401).send('ER401');
+
+    let results = await post(SCM_DB_FETCH, {
+        db: 'mongo',
+        table: 'Bookings',
+        condition: {
+            status: 'active'
+        }
+    })
+
+    results == null ? res.json([]) : res.json(results);
+}
+
+export const getBooking = async(req, res) => {
+    const adminUser = await validateUserRole(req.headers['authorization']);
+    if(adminUser == null) return res.status(401).send('ER401');
+
+    const bid = req.params.bid;
+    if(bid == null || bid == '') return res.status(400).send('ER704,bid')
+
+    let  results = await post(SCM_DB_FETCH, {
+        db: 'mongo',
+        table: 'Bookings',
+        condition: {
+            bid: bid
+        }
+    });
+
+    if (results == null || results.length == 0) return res.status(400).send('ER704,bid');
+    else res.json(results[0]); 
+}
+
+export const cancelBooking = async (req, res) => {
+    const adminUser = await validateAdminRole(req.headers['authorization']);
+    if(adminUser == null) return res.status(401).send('ER401');
+
+    const bid = req.params.bid;
+    if(bid == null || bid == '') return res.status(400).send('ER704,bid')
+
+    let  results = await post(SCM_DB_FETCH, {
+        db: 'mongo',
+        table: 'Bookings',
+        condition: {
+            bid: bid
+        }
+    });
+
+    if (results == null || results.length == 0) return res.status(400).send('ER704,bid');
+    let booking = results[0];
+
+    //TODO: Pass request to Unity module to cancel the booking.
+
+    res.status(500).send('API not yet implemented');
+}
+
 const createBookingObject = (x, bidRules, compensationRules) => new Promise(async resolve => {
     let booking = {
         bid: makeid(36),

@@ -15,6 +15,7 @@ cron.schedule('* * * * *', async () => { //runs every minute
 
     //check if bid qualifies for a step up
     let bidsToStep = results.filter(x => {
+        console.log(`${x.bid} | ${x.current_step} | ${x.step_period}`);
         if(x.status != 'active') return false;
         if(parseInt(x.updated_at) + parseInt(x.step_period) * 1000 < Date.now()) return true;
         else return false;

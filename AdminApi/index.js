@@ -5,7 +5,10 @@ const app = express();
 import { login, firstRegister, activationStatus, register } from './routes/v1/login.js';
 import { updateProfile, getProfile, changePassword } from './routes/v1/user-profile.js';
 import { listUsers, getUserProfile, resetPassword, adminUpdateUserProfile } from './routes/v1/user-management.js';
-import { createBooking } from './routes/v1/bookings.js';
+import { createBooking, getLatestBookings, getBooking, cancelBooking } from './routes/v1/bookings.js';
+import { pendingKyc, getRiderKyc, approveKyc, rejectKyc, getRejectedKyc, getApprovedKyc, getIncompleteKyc } from './routes/v1/kyc.js';
+import { fetchKycDoc} from './controllers/filemanager.js';
+import { getAllRiders, getRider } from './routes/v1/riders.js';
 import pkg from 'body-parser';
 const {json} = pkg;
 import {config} from 'dotenv';
@@ -39,6 +42,21 @@ app.post('/v1/user-mgmt/:aid/reset-password', resetPassword);
 app.post('/v1/user-mgmt/:aid/update-profile', adminUpdateUserProfile);
 
 app.post('/v1/bookings/create', createBooking);
+app.get('/v1/bookings/latest', getLatestBookings);
+app.get('/v1/bookings/:bid/get', getBooking);
+app.post('/v1/bookings/:bid/cancel', cancelBooking);
+
+app.get('/v1/kyc/pending', pendingKyc);
+app.get('/v1/kyc/rejected', getRejectedKyc);
+app.get('/v1/kyc/approved', getApprovedKyc);
+app.get('/v1/kyc/incomplete', getIncompleteKyc);
+app.get('/v1/kyc/:rid/get', getRiderKyc);
+app.get('/v1/kyc/:rid/doc/:fileid', fetchKycDoc);
+app.post('/v1/kyc/:rid/approve', approveKyc);
+app.post('/v1/kyc/:rid/reject', rejectKyc);
+
+app.get('/v1/riders/get-all', getAllRiders);
+app.get('/v1/riders/:rid/get', getRider);
 
 // app.use('/v1/rider/fetch-kyc', fetchKyc);
 // app.use('/v1/rider/update-kyc', updateKyc);

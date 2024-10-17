@@ -98,14 +98,20 @@ export const updateKyc = async(req, res) => {
     updatedRow.bank_ifsc = formData.bank_ifsc;
     updatedRow.bank_ac_name = formData.bank_ac_name;
 
-
     updatedRow.updatedAt = Date.now();
 
-    //invalidate any previous KYC
-    updatedRow.kyc_approved = false;
-    updatedRow.kyc_error_message = '';
-    updatedRow.kyc_approvedAt = 0;
-    updatedRow.kyc_approvedBy = '';
+    //invalidate any previous KYC and set appropriate status
+    if(validateKycAllDocsPresent(updatedRow)) {
+        updatedRow.kyc_approved = 'pending-review';
+        updatedRow.kyc_error_message = '';
+        updatedRow.kyc_approvedAt = 0;
+        updatedRow.kyc_approvedBy = '';
+    } else {
+        updatedRow.kyc_approved = 'incomplete';
+        updatedRow.kyc_error_message = '';
+        updatedRow.kyc_approvedAt = 0;
+        updatedRow.kyc_approvedBy = '';
+    }
 
     await post(SCM_DB_UPDATE, {
         db: 'mongo',
@@ -119,4 +125,12 @@ export const updateKyc = async(req, res) => {
     //TODO: Validate and Update the record in mongodb
 
     res.send();
+}
+
+const validateKycAllDocsPresent = (rider) => {
+    return !(rider.first_name || rider.last_name || rider.gender || rider.dob 
+        || rider.address_line1 || rider.zipcode || rider.city || rider.district 
+        || rider.state || rider.aadhar_no || rider.pan_no || rider.bank_ac 
+        || rider.bank_ifsc || rider.bank_ac_name || rider.photo_id_front
+    || rider.utility_bill || rider.pan_copy);
 }

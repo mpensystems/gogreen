@@ -210,7 +210,7 @@ const createNewRiderObject = () => {
         bank_ifsc: '',
         bank_ac_name: '',
         cancelled_cheque: '',
-        kyc_approved: '',
+        kyc_approved: 'incomplete',
         kyc_error_message: '',
         kyc_approvedAt: 0,
         kyc_approvedBy: '',
