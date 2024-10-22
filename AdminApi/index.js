@@ -7,6 +7,7 @@ import { updateProfile, getProfile, changePassword } from './routes/v1/user-prof
 import { listUsers, getUserProfile, resetPassword, adminUpdateUserProfile } from './routes/v1/user-management.js';
 import { createBooking, getLatestBookings, getBooking, cancelBooking } from './routes/v1/bookings.js';
 import { pendingKyc, getRiderKyc, approveKyc, rejectKyc, getRejectedKyc, getApprovedKyc, getIncompleteKyc } from './routes/v1/kyc.js';
+import { getHomePageStats, getActiveRiderLocations } from './routes/v1/home.js';
 import { fetchKycDoc} from './controllers/filemanager.js';
 import { getAllRiders, getRider } from './routes/v1/riders.js';
 import pkg from 'body-parser';
@@ -57,6 +58,9 @@ app.post('/v1/kyc/:rid/reject', rejectKyc);
 
 app.get('/v1/riders/get-all', getAllRiders);
 app.get('/v1/riders/:rid/get', getRider);
+
+app.get('/v1/home/stats', getHomePageStats);
+app.get('/v1/home/active-rider-map', getActiveRiderLocations);
 
 // app.use('/v1/rider/fetch-kyc', fetchKyc);
 // app.use('/v1/rider/update-kyc', updateKyc);

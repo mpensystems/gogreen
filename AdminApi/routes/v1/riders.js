@@ -48,6 +48,8 @@ const sanitizeRider = (rider) => {
         rid: rider.rid,
         first_name: rider.first_name,
         last_name: rider.last_name,
+        country_code: rider.country_code,
+        mobile: rider.mobile,
         gender: rider.gender,
         city: rider.city,
         state: rider.state,
