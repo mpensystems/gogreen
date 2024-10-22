@@ -1,102 +1,102 @@
-min-pay-per-km: 8
-max-pay-per-km: 25
-pickup-canceled:
-  too-big:
-    rider-paid: 10%
-    customer-pays: 10%
-  restricted-item:
-    rider-paid: 20%
-    customer-pays: 20%
-  insufficient-packaging:
-    rider-paid: 10%
-    customer-pays: 10%
-  drop-to-far:
-    rider-paid: 10%
-    customer-pays: 10%
-  pickup-location-embargo:
-    rider-paid: 10%
-    customer-pays: 10%
-  rider-change-of-heart:
-    rider-paid: -20%
-    customer-pays: 0%
-  customer-change-of-heart:
-    rider-paid: 20%
-    customer-pays: 20%
-  rider-not-reachable:
-    rider-paid: -20%
-    customer-pays: 0%
-  pickup-person-not-reachable:
-    rider-paid: 20%
-    customer-pays: 20%
+min_pay_per_km: 8
+max_pay_per_km: 25
+pickup_canceled:
+  too_big:
+    rider_paid: 10%
+    customer_pays: 10%
+  restricted_item:
+    rider_paid: 20%
+    customer_pays: 20%
+  insufficient_packaging:
+    rider_paid: 10%
+    customer_pays: 10%
+  drop_to_far:
+    rider_paid: 10%
+    customer_pays: 10%
+  pickup_location_embargo:
+    rider_paid: 10%
+    customer_pays: 10%
+  rider_change_of_heart:
+    rider_paid: _20%
+    customer_pays: 0%
+  customer_change_of_heart:
+    rider_paid: 20%
+    customer_pays: 20%
+  rider_not_reachable:
+    rider_paid: _20%
+    customer_pays: 0%
+  pickup_person_not_reachable:
+    rider_paid: 20%
+    customer_pays: 20%
   other:
-    rider-paid: 0%
-    customer-pays: 0%
+    rider_paid: 0%
+    customer_pays: 0%
 returned:
-  rider-change-of-heart:
-    rider-paid: -50%
-    customer-pays: 0%
-  customer-change-of-heart:
-    rider-paid: 100%
-    customer-pays: 100%
-  too-big:
-    rider-paid: 0%
-    customer-pays: 0%
-  restricted-item:
-    rider-paid: 0%
-    customer-pays: 0%
-  insufficient-packaging:
-    rider-paid: 0%
-    customer-pays: 0%
-  drop-to-far:
-    rider-paid: -20%
-    customer-pays: 0%
-  insufficient-fuel:
-    rider-paid: -20%
-    customer-pays: 0%
-  recipient-not-available:
-    rider-paid: 150%
-    customer-pays: 150%
-  recipient-location-embargo:
-    rider-paid: 150%
-    customer-pays: 150%
+  rider_change_of_heart:
+    rider_paid: _50%
+    customer_pays: 0%
+  customer_change_of_heart:
+    rider_paid: 100%
+    customer_pays: 100%
+  too_big:
+    rider_paid: 0%
+    customer_pays: 0%
+  restricted_item:
+    rider_paid: 0%
+    customer_pays: 0%
+  insufficient_packaging:
+    rider_paid: 0%
+    customer_pays: 0%
+  drop_to_far:
+    rider_paid: _20%
+    customer_pays: 0%
+  insufficient_fuel:
+    rider_paid: _20%
+    customer_pays: 0%
+  recipient_not_available:
+    rider_paid: 150%
+    customer_pays: 150%
+  recipient_location_embargo:
+    rider_paid: 150%
+    customer_pays: 150%
   other:
-    rider-paid: 0%
-    customer-pays: 0%
-drop-canceled:
-  package-lost-in-transit:
-    rider-paid: -200%
-    customer-pays: -200%
-  rider-accident:
-    rider-paid: -200%
-    customer-pays: -200%
-  physical-damage:
-    rider-paid: -200%
-    customer-pays: -200%
-  contents-spilled:
-    rider-paid: -200%
-    customer-pays: -200%
-  water-damage:
-    rider-paid: -200%
-    customer-pays: -200%
-  customer-change-of-heart:
-    rider-paid: 100%
-    customer-pays: 100%
-  rider-not-reachable:
-    rider-paid: -200%
-    customer-pays: -200%
+    rider_paid: 0%
+    customer_pays: 0%
+drop_canceled:
+  package_lost_in_transit:
+    rider_paid: _200%
+    customer_pays: _200%
+  rider_accident:
+    rider_paid: _200%
+    customer_pays: _200%
+  physical_damage:
+    rider_paid: _200%
+    customer_pays: _200%
+  contents_spilled:
+    rider_paid: _200%
+    customer_pays: _200%
+  water_damage:
+    rider_paid: _200%
+    customer_pays: _200%
+  customer_change_of_heart:
+    rider_paid: 100%
+    customer_pays: 100%
+  rider_not_reachable:
+    rider_paid: _200%
+    customer_pays: _200%
   other:
-    rider-paid: -200%
-    customer-pays: -200%
+    rider_paid: _200%
+    customer_pays: _200%
 delivered: 
-  physical-damage:
-    rider-paid: 80%
-    customer-pays: 80%
-  contents-spilled:
-    rider-paid: 80%
-    customer-pays: 80%
-  water-damage:
-    rider-paid: 80%
-    customer-pays: 80%
+  physical_damage:
+    rider_paid: 80%
+    customer_pays: 80%
+  contents_spilled:
+    rider_paid: 80%
+    customer_pays: 80%
+  water_damage:
+    rider_paid: 80%
+    customer_pays: 80%
   other: 
     rider: 100%
     customer: 100%
