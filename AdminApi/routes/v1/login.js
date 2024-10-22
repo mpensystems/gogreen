@@ -47,7 +47,7 @@ export const login = async (req, res) => {
 
         let st = makeid(64);
         let stHash = createHash('md5').update(st).digest('hex');
-        let adminUser = adminUsers[0];
+        const adminUser = adminUsers[0];
         const validUntil = Date.now() + 24 * 60 * 60 * 1000;
 
         //Insert session token into Redis
@@ -66,7 +66,7 @@ export const login = async (req, res) => {
             ]
         })
 
-        res.json({ st:  st, validUntil: validUntil});
+        res.json({ st:  st, validUntil: validUntil, role: adminUser.role});
     } catch (err) {
         console.log(err);
         res.status(500).send('ER500');
