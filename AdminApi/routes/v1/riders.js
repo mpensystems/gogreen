@@ -109,6 +109,83 @@ export const getEarningsLedger = async(req, res) => {
     res.json(transactions);
 }
 
+export const getEarningsTotal = async (req, res) => {
+    let adminUser = await validateUserRole(req.headers['authorization']);
+    if(adminUser == null) return res.status(401).send('ER401');
+
+    const rid = req.params.rid;
+    const aggregation = req.params.aggregation;
+
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+
+    switch(aggregation) {
+        case 'today':
+        case 'yesterday':
+        case 'this-week':
+        case 'last-week':
+        case 'this-month':
+        case 'last-month':
+        case 'this-year':
+        case 'last-year':
+        case 'range':
+        case 'all':
+            break;
+        default:
+            return res.status(400).send('ER704,aggregation');
+    }
+    
+    if(aggregation == 'all') {
+        let result = {
+            today: {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            },
+            yesterday: {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            },
+            this_week: {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            },
+            last_week: {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            },
+            this_month: {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            },
+            last_month: {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            },
+            this_year: {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            },
+            last_year: {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            }
+        }
+
+        if(start_date != null &&  end_date != null) {
+            result.range = {
+                earnings: getRandomInt(5000),
+                withdrawals: getRandomInt(3000)
+            }
+        }
+
+        res.json(result);
+    }
+    else res.json({
+        earnings: getRandomInt(5000),
+        withdrawals: getRandomInt(3000)
+    })
+}
+
 const getRandomInt = (max) => {
     return Math.floor(Math.random() * max);
 }

@@ -32,6 +32,8 @@ wss.on('connection', (ws) => {
             switch (cmd) {
                 case 'auth':
                     if (rid != undefined) return ws.send(JSON.stringify({ cmd: 'error', error_code: 'ER408', error_message: 'Cannot reattempt auth' }));
+                    if (p.auth == undefined || p.auth == '') return ws.send(JSON.stringify({ cmd: 'error', error_code: 'ER704,auth', error_message: 'Auth field missing in payload'}));
+                    if (p.st == undefined || p.st == '') return ws.send(JSON.stringify({ cmd: 'error', error_code: 'ER704,st', error_message: 'st field missing in payload'}));
                     rid = await processAuth(id, p);
                     riderMap.set(rid, ws);
                     ws.send(JSON.stringify({ cmd: 'ack', id: id }));

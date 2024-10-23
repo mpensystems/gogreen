@@ -9,7 +9,7 @@ import { createBooking, getLatestBookings, getBooking, cancelBooking } from './r
 import { pendingKyc, getRiderKyc, approveKyc, rejectKyc, getRejectedKyc, getApprovedKyc, getIncompleteKyc } from './routes/v1/kyc.js';
 import { getHomePageStats, getActiveRiderLocations } from './routes/v1/home.js';
 import { fetchKycDoc} from './controllers/filemanager.js';
-import { getAllRiders, getRider, getEarningsLedger } from './routes/v1/riders.js';
+import { getAllRiders, getRider, getEarningsLedger, getEarningsTotal } from './routes/v1/riders.js';
 import pkg from 'body-parser';
 const {json} = pkg;
 import {config} from 'dotenv';
@@ -59,6 +59,7 @@ app.post('/v1/kyc/:rid/reject', rejectKyc);
 app.get('/v1/riders/get-all', getAllRiders);
 app.get('/v1/riders/:rid/get', getRider);
 app.get('/v1/riders/:rid/earnings-ledger', getEarningsLedger);
+app.get('/v1/riders/:rid/earnings/:aggregation', getEarningsTotal);
 
 app.get('/v1/home/stats', getHomePageStats);
 app.get('/v1/home/active-rider-map', getActiveRiderLocations);
