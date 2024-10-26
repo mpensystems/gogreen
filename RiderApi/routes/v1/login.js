@@ -159,6 +159,7 @@ export const validateOtp = async (req, res) => {
                 createdAt: rider.createdAt // use for displaying "Members Since" on the app. 
             }
         });
+        console.log('Rid: ' + rider.rid);
 
         //TODO: Drop the RiderOtp record
         post(SCM_DB_DELETE, {

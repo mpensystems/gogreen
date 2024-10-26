@@ -1,33 +1,119 @@
+/**
+ * Used to provide a single threaded synchronous execution of key commands. 
+ * All ops related to bookings and trips must be passed onto this single function to 
+ * manage so as to prevent thread locking and deadlock scenarios. 
+ * 
+ * @author Sanket Sarang <sanket@blobcity.com>
+ */
+
 var Mutex = require('async-mutex').Mutex;
 var api = require('../api.js');
 const URLS = require('../urls.js');
 const mutex = new Mutex();
 const kafka = require('../services/kafkaService.js');
 const h3 = require('h3-js');
+const utils = require('../utils.js');
 
-const processUnity = (command) => {
+const processUnity = (command) => new Promise((resolve, reject) => {
+    console.log('Entering lock');
     mutex.acquire().then(async (release) => {
         try {
             switch (command.cmd) {
                 case 'bid-step':
-                    await bidNextStep(command.p);
-                    break;
+                    return resolve(await bidNextStep(command.p));
                 case 'accept-booking':
-                    await bookingToTrip(command.p);
-                    break;
+                    // return resolve({ack: 1})
+                    let result = await bookingToTrip(command.p.bid, command.p.rid);
+                    console.log(result);
+                    return resolve(result);
             }
         } catch (err) {
             console.error(err)
+            reject(err);
         } finally {
             release();
+            console.log('Lock released');
         }
-
     })
-}
+})
 
-const bookingToTrip = (bid, rid) => new Promise((resolve, reject) => {
-    console.log('Yet to implement booking to trip');
-    resolve();
+const bookingToTrip = (bid, rid) => new Promise(async (resolve, reject) => {
+    try {
+        //Fetch the booking object from Mongo
+        let booking = await api.fetchOne({
+            db: 'mongo',
+            table: 'Bookings',
+            condition: {
+                bid: bid
+            }
+        });
+        if (booking.status != 'active') return reject('ER212');
+
+        //Fetch the latest BookingBid object from Redis
+        let bookingBid = await api.fetchOne({
+            db: 'redis',
+            table: 'BookingBids',
+            id: bid
+        })
+        if (bookingBid.status != 'active') return reject('ER212');
+
+        //Fetch the Rider object from Mongo
+        let rider = await api.fetchOne({
+            db: 'mongo',
+            table: 'Riders',
+            condition: {
+                rid: rid
+            }
+        })
+
+        const trip = createTripObject(booking, bookingBid, rider);
+        console.log(JSON.stringify(trip));
+
+        await api.post(URLS.SCM_DB_INSERT, {
+            db: 'mongo',
+            table: 'Trips',
+            rows: [trip]
+        })
+
+        if(booking.tids == null) booking.tids = [];
+        booking.tids.push(trip.tid);
+        booking.status = 'trip_started';
+
+        delete booking._id;
+        await api.post(URLS.SCM_DB_UPDATE, {
+            db: 'mongo',
+            table: 'Bookings',
+            row: booking,
+            condition: {
+                bid: booking.bid
+            }
+        })
+
+        bookingBid.status = 'trip_started';
+        kafka.broadcastBidChange(bookingBid);
+
+        await api.post(URLS.SCM_DB_DELETE, {
+            db: 'redis',
+            table: 'BookingBids',
+            id: booking.bid
+        })
+
+        resolve(trip);
+
+        /**
+         * TODO: CONVERT BOOKING TO TRIP HERE. THIS FUNCTION IS EXECUTED ONE AT A TIME AND IS THREAD SAFE
+         *
+         * 1. Create a new trip object
+         * 2. Insert the trip object inside Mongo.Trips
+         * 3. Update Booking status to trip_started
+         * 4. Update BookingBid status to trip_started
+         * 5. Send update on all BookingBids.h3is redis pub/sub channels
+         */
+
+    } catch (err) {
+        console.error(err);
+        reject('ER500'); //must send back correct status and error code
+    }
 })
 
 const bidNextStep = (x) => new Promise(async (resolve, reject) => {
@@ -40,6 +126,7 @@ const bidNextStep = (x) => new Promise(async (resolve, reject) => {
             x.ended_at = Date.now();
             await saveBidConfig(x);
             await removeBookingFromGrid(x.bid, x.h3is.split(','));
+            await setBookingStatusEnded(x.bid);
             return;
         }
 
@@ -164,5 +251,83 @@ const removeBookingFromGrid = (bid, grid) => new Promise(async resolve => {
     await Promise.all(promises);
     resolve();
 })
+
+const setBookingStatusEnded = (bid) => new Promise(async (resolve, reject) => {
+    try {
+        let booking = await api.fetchOne({
+            db: 'mongo',
+            table: 'Bookings',
+            condition: {
+                bid: bid
+            }
+        })
+
+        booking.status = status;
+        await api.post(URLS.SCM_DB_UPDATE, {
+            db: 'mongo',
+            table: 'Bookings',
+            row: booking,
+            condition: {
+                bid: bid
+            }
+        })
+
+        resolve();
+    } catch (err) {
+        console.error(err);
+        reject(err);
+    }
+})
+
+const createTripObject = (booking, bookingBid, rider) => {
+    let trip = {
+        tid: utils.makeid(36),
+        bid: booking.bid,
+        rid: rider.rid,
+        status: 'way-to-pickup',
+        substatus: 'routing',
+
+        pickup_address1: booking.pickup_address1 || '',
+        pickup_address2: booking.pickup_address2 || '',
+        pickup_house: booking.pickup_house || '',
+        pickup_landmark: booking.pickup_landmark || '',
+        pickup_zip: booking.pickup_zip || '',
+        pickup_city: booking.pickup_city || '',
+        pickup_state: booking.pickup_state || '',
+        pickup_district: booking.pickup_district || '',
+        pickup_mobile: booking.pickup_mobile || '',
+        pickup_name: booking.pickup_name || '',
+        pickup_geo: booking.pickup_geo,
+        pickup_h3i: booking.pickup_h3i,
+
+        drop_address1: booking.drop_address1 || '',
+        drop_address2: booking.drop_address2 || '',
+        drop_house: booking.drop_house || '',
+        drop_landmark: booking.drop_landmark || '',
+        drop_zip: booking.drop_zip || '',
+        drop_city: booking.drop_city || '',
+        drop_state: booking.drop_state || '',
+        drop_district: booking.drop_district || '',
+        drop_mobile: booking.drop_mobile || '',
+        drop_name: booking.drop_name || '',
+        drop_geo: booking.drop_geo,
+        drop_h3i: booking.drop_h3i,
+
+        trip_distance: booking.trip_distance,
+
+        channel: booking.channel || 'admin-created',
+        orderId: booking.orderId || '',
+        lineitems: booking.linetimes || [],
+        declaredValue: booking.declaredValue || 0.0,
+
+        fare: bookingBid.current_bid,
+        riderPaid: 0.0, //saves final value after trip completion. 
+        customerPays: 0.0, //saves final value after trip completion. 
+
+        created_at: Date.now()
+    }
+
+    return trip;
+}
 
 module.exports = { processUnity }

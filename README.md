@@ -7,7 +7,7 @@
 ![Backend](https://img.shields.io/badge/Backend-NodeJS-red)
 ![Admin](https://img.shields.io/badge/Administration-React-orange)
 ![RiderApp](https://img.shields.io/badge/Rider%20App-React%20Native-yellow)
-![PubSub](https://img.shields.io/badge/PubSub-Kafka-darkgreen)
+![PubSub](https://img.shields.io/badge/PubSub-Kafka-olive)
 ![Mongo](https://img.shields.io/badge/Storage-MongoDB-green)
 ![Redis](https://img.shields.io/badge/Cache-Redis-lime)
 

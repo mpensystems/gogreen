@@ -58,8 +58,8 @@ app.post('/v1/kyc/:rid/reject', rejectKyc);
 
 app.get('/v1/riders/get-all', getAllRiders);
 app.get('/v1/riders/:rid/get', getRider);
-app.get('/v1/riders/:rid/earnings-ledger', getEarningsLedger);
-app.get('/v1/riders/:rid/earnings/:aggregation', getEarningsTotal);
+app.use('/v1/riders/:rid/earnings-ledger', getEarningsLedger);
+app.use('/v1/riders/:rid/earnings/:aggregation', getEarningsTotal);
 
 app.get('/v1/home/stats', getHomePageStats);
 app.get('/v1/home/active-rider-map', getActiveRiderLocations);

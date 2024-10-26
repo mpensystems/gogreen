@@ -101,8 +101,36 @@ export const droppedAtOrigin = async(req, res) => {
 }
 
 const validateStatusCombination = (trip, status, substatus) => {
-    const curentStatus = trip.status;
-    const currentSubstatus = trip.substatus;
+    const cs = trip.status; //current status
+    const css = trip.substatus; //current sub-status
 
-    
+    switch(status) {
+        case 'pickup-canceled':
+        case 'drop-canceled':
+            //restricted status change. Do not allow on rider api. Only admin can update to this status
+            return `ER215,${cs}/${css},${status}/${substatus}`;
+        case 'way-to-pickup':
+            if(cs != 'way-to-pickup' || css != 'routing') return `ER215,${cs}/${css},${status}/${substatus}`;
+            switch(substatus) {
+                case 'routing':
+                    //rider had accidentally marked reached pickup location, and wishes to undo the action.
+                    break;
+                case 'arrived-at-pickup':
+                    if(css != 'routing') return `ER215,${cs}/${css},${status}/${substatus}`;
+                default:
+                    return 'ER704,substatus';
+            }
+            break;
+        case 'way-to-drop':
+            break;
+        case 'way-to-return':
+        case 'delivered':
+            if(cs != 'way-to-drop' || css != 'arrived-at-drop') return `ER215,${cs}/${css},${status}/${substatus}`;
+        case 'returned':
+            if(cs != 'way-to-return' || css != 'arrived-at-return') return `ER215,${cs}/${css},${status}/${substatus}`;
+        default: 
+            return `ER704,status`;
+    }
+
+    return null; //no error to report. Validation is successful
 }

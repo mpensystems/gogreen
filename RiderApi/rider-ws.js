@@ -82,6 +82,7 @@ wss.on('connection', (ws) => {
 //Start a kafka listener for messages to send on the sockets
 const client = new kafka.KafkaClient({ kafkaHost: '134.209.149.111:29092' });
 const Consumer = kafka.Consumer;
+//{ topic: 'active-trips'}
 export const consumer = new Consumer(client, [{ topic: 'booking-bids' }, { topic: 'new-bookings' }]);
 consumer.on('message', (message) => {
     let value = JSON.parse(message.value);

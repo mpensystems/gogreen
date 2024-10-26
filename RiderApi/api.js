@@ -24,7 +24,8 @@ const post = async (url, formData, headers) => new Promise((resolve, reject) => 
         resolve(response.data);
     }).catch(err => {
         console.log(err);
-        reject('ER500');
+        if(err.response.data.startsWith('ER')) reject(err.response.data);
+        else reject('ER500');
     })
 })
 

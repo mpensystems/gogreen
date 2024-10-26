@@ -23,7 +23,7 @@ pickup_canceled:
     rider_paid: 20%
     customer_pays: 20%
   rider_not_reachable:
-    rider_paid: _20%
+    rider_paid: -20%
     customer_pays: 0%
   pickup_person_not_reachable:
     rider_paid: 20%
@@ -33,7 +33,7 @@ pickup_canceled:
     customer_pays: 0%
 returned:
   rider_change_of_heart:
-    rider_paid: _50%
+    rider_paid: -50%
     customer_pays: 0%
   customer_change_of_heart:
     rider_paid: 100%
@@ -48,10 +48,10 @@ returned:
     rider_paid: 0%
     customer_pays: 0%
   drop_to_far:
-    rider_paid: _20%
+    rider_paid: -20%
     customer_pays: 0%
   insufficient_fuel:
-    rider_paid: _20%
+    rider_paid: -20%
     customer_pays: 0%
   recipient_not_available:
     rider_paid: 150%
@@ -64,29 +64,29 @@ returned:
     customer_pays: 0%
 drop_canceled:
   package_lost_in_transit:
-    rider_paid: _200%
-    customer_pays: _200%
+    rider_paid: -200%
+    customer_pays: -200%
   rider_accident:
-    rider_paid: _200%
-    customer_pays: _200%
+    rider_paid: -200%
+    customer_pays: -200%
   physical_damage:
-    rider_paid: _200%
-    customer_pays: _200%
+    rider_paid: -200%
+    customer_pays: -200%
   contents_spilled:
-    rider_paid: _200%
-    customer_pays: _200%
+    rider_paid: -200%
+    customer_pays: -200%
   water_damage:
-    rider_paid: _200%
-    customer_pays: _200%
+    rider_paid: -200%
+    customer_pays: -200%
   customer_change_of_heart:
     rider_paid: 100%
     customer_pays: 100%
   rider_not_reachable:
-    rider_paid: _200%
-    customer_pays: _200%
+    rider_paid: -200%
+    customer_pays: -200%
   other:
-    rider_paid: _200%
-    customer_pays: _200%
+    rider_paid: -200%
+    customer_pays: -200%
 delivered: 
   physical_damage:
     rider_paid: 80%
