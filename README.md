@@ -18,10 +18,14 @@
 Application stack for launching an eBike hyper local delivery service. This repository hosts the entire
 backend logic and the core engine to run an eBike hyper local delivery service. 
 
-Supporting Repositories:
-React Native Rider App ![RiderApp](https://img.shields.io/badge/React%20Native-yellow)
-Admin Portal ![Admin](https://img.shields.io/badge/React-orange)
-Trip Process Tracking App ![WebTracking](https://img.shields.io/badge/React-green)
+## Supporting Repositories
+React Native Rider App ![RiderApp](https://img.shields.io/badge/React%20Native-yellow)<br/>
+Admin Portal ![Admin](https://img.shields.io/badge/React-orange)<br/>
+Trip Process Tracking App ![WebTracking](https://img.shields.io/badge/React-green)<br/>
 
-Usage of this platform requires an API based integration with any existing store front. Orders can be created by
-admins via the admin portal, or via API integration with an existing store front. 
+Usage of this platform requires either an API based integration with any existing eCommerce storefront, or manual
+order creation via the admin portal in case of a brick-and-mortar store. 
+
+## Getting Started
+
+## Contributing
