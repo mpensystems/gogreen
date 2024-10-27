@@ -1,4 +1,4 @@
-# GoGreen
+# Lets Move Greener
 ![Static Badge](https://img.shields.io/badge/Read-Docs-blue)
 ![Docker Pulls](https://img.shields.io/docker/pulls/blobcity/db)
 ![Docker Stars](https://img.shields.io/docker/stars/blobcity/db)
@@ -26,7 +26,7 @@ backend logic and the core engine to run an eBike hyper local delivery service.
 **Trip Tracking** ![WebTracking](https://img.shields.io/badge/React-green) A web based interface, that generates a unique tracking link for each trip. The link can be shared with the end customer
 to track the process of the trip via a web page.
 
-*Note* Usage of this platform requires either an API based integration with an existing eCommerce storefront, or manual
+*Note:* Usage of this platform requires either an API based integration with an existing eCommerce storefront, or manual
 order creation via the admin portal in case of a brick-and-mortar store. 
 
 ## Getting Started
