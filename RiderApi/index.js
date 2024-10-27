@@ -14,7 +14,7 @@ import {config} from 'dotenv'
 config();
 import {upload, handleKycDocUpload, fetchKycDoc} from './controllers/filemanager.js'
 import { initiateRiderWsAuth } from './routes/v1/rider-ws-auth.js';
-import { setStatus } from './routes/v1/trip.js';
+import { setStatus, getActiveTrips, getTrip } from './routes/v1/trip.js';
 import { wss } from './rider-ws.js';
 import { acceptBooking } from './routes/v1/bookings.js';
 
@@ -60,6 +60,8 @@ app.get('/v1/rider/view-kyc-doc/:fileid', fetchKycDoc);
 
 app.post('/v1/bookings/:bid/accept', acceptBooking);
 app.post('/v1/trips/:tid/set/:status/:substatus', setStatus);
+app.use('/v1/trips/active', getActiveTrips);
+app.use('/v1/trips/:tid/get', getTrip);
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
