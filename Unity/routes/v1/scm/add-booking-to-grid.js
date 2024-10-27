@@ -1,9 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var Mutex = require('async-mutex').Mutex;
 var api = require('../../../api');
 const URLS = require('../../../urls');
-const mutex = new Mutex();
 
 router.post('/', async (req, res) => {
     const bid = req.body.bid;

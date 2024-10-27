@@ -23,7 +23,7 @@ const processUnity = (command) => new Promise((resolve, reject) => {
                     return resolve(await bidNextStep(command.p));
                 case 'accept-booking':
                     // return resolve({ack: 1})
-                    let result = await bookingToTrip(command.p.bid, command.p.rid);
+                    let result = await bookingToTrip(command.p.bid, command.p.rid, command.p.riderLoc);
                     console.log(result);
                     return resolve(result);
             }
@@ -37,7 +37,7 @@ const processUnity = (command) => new Promise((resolve, reject) => {
     })
 })
 
-const bookingToTrip = (bid, rid) => new Promise(async (resolve, reject) => {
+const bookingToTrip = (bid, rid, riderLoc) => new Promise(async (resolve, reject) => {
     try {
         //Fetch the booking object from Mongo
         let booking = await api.fetchOne({
@@ -66,7 +66,7 @@ const bookingToTrip = (bid, rid) => new Promise(async (resolve, reject) => {
             }
         })
 
-        const trip = createTripObject(booking, bookingBid, rider);
+        const trip = createTripObject(booking, bookingBid, rider, riderLoc);
         console.log(JSON.stringify(trip));
 
         await api.post(URLS.SCM_DB_INSERT, {
@@ -75,7 +75,7 @@ const bookingToTrip = (bid, rid) => new Promise(async (resolve, reject) => {
             rows: [trip]
         })
 
-        if(booking.tids == null) booking.tids = [];
+        if (booking.tids == null) booking.tids = [];
         booking.tids.push(trip.tid);
         booking.status = 'trip_started';
 
@@ -146,7 +146,6 @@ const bidNextStep = (x) => new Promise(async (resolve, reject) => {
         let oldH3is = x.h3is.split(',');
         let lat = parseFloat(x.lat);
         let lng = parseFloat(x.lng);
-        console.log(`${lat} | ${lng}`);
         let pickupH3i = h3.latLngToCell(parseFloat(x.lat), parseFloat(x.lng), 9);
         let newH3is = h3.gridDisk(pickupH3i, x.current_dist);
 
@@ -162,8 +161,12 @@ const bidNextStep = (x) => new Promise(async (resolve, reject) => {
     } catch (err) {
         console.error(err);
     } finally {
-        kafka.broadcastBidChange(x);
         resolve();
+        try {
+            kafka.broadcastBidChange(x);
+        } catch (err) {
+            console.log(err);
+        }
     }
 })
 
@@ -279,7 +282,7 @@ const setBookingStatusEnded = (bid) => new Promise(async (resolve, reject) => {
     }
 })
 
-const createTripObject = (booking, bookingBid, rider) => {
+const createTripObject = (booking, bookingBid, rider, riderLoc) => {
     let trip = {
         tid: utils.makeid(36),
         bid: booking.bid,
@@ -314,6 +317,14 @@ const createTripObject = (booking, bookingBid, rider) => {
         drop_h3i: booking.drop_h3i,
 
         trip_distance: booking.trip_distance,
+        start_geo: {
+            lat: riderLoc.lat,
+            lng: riderLoc.lng
+        },
+        end_geo: {
+            lat: 0.00,
+            lng: 0.00
+        },
 
         channel: booking.channel || 'admin-created',
         orderId: booking.orderId || '',
@@ -324,7 +335,9 @@ const createTripObject = (booking, bookingBid, rider) => {
         riderPaid: 0.0, //saves final value after trip completion. 
         customerPays: 0.0, //saves final value after trip completion. 
 
-        created_at: Date.now()
+        created_at: Date.now(),
+        startTime: Date.now(),
+        endTime: 0
     }
 
     return trip;

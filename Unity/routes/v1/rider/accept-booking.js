@@ -1,10 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var Mutex = require('async-mutex').Mutex;
 var api = require('../../../api');
 const URLS = require('../../../urls');
 const bookingService = require('../../../services/bookingService');
-const mutex = new Mutex();
 
 router.post('/', async (req, res) => {
     let bid = req.body.bid;
@@ -12,12 +10,29 @@ router.post('/', async (req, res) => {
     let rid = req.body.rid;
 
     try {
+        //Check if rider currently has an active booking, if so the rider cannot accept a new booking
+        let riderActiveTrips = await api.post(URLS.SCM_DB_FETCH, {
+            db: 'mongo',
+            table: 'Trips',
+            condition: {
+                "$or": [
+                    {status: 'way-to-pickup'},
+                    {status: 'way-to-drop'},
+                    {status: 'way-to-return'},
+                    {status: 'way-to-pickup'}
+                ],
+                rid: rid
+            }
+        })
+
+        if(riderActiveTrips.length > 0) return res.status(400).send('ER213');
+
         let result = await bookingService.processUnity({
             cmd: 'accept-booking',
             p: {
                 bid: bid,
                 rid: rid,
-                riderLoc, riderLoc
+                riderLoc: riderLoc
             }
         });
 
@@ -26,54 +41,6 @@ router.post('/', async (req, res) => {
         if(err == 'ER212') res.status(400).send(err);
         else res.status(500).send(err);
     }
-
-    // mutex.acquire().then(async (release) => {
-    //     try {
-    //         //Fetch the booking object from Mongo
-    //         let booking = await api.post(URLS.SCM_DB_FETCH, {
-    //             db: 'mongo',
-    //             table: 'Bookings',
-    //             q: {
-    //                 bid: bid
-    //             }
-    //         });
-    //         if (booking == null || booking.status != 'active') {
-    //             res.status(400).send('ER212');
-    //             return;
-    //         }
-
-    //         //Fetch the latest BookingBid object from Redis
-    //         let bookingBid = await api.post(URLS.SCM_DB_FETCH, {
-    //             db: 'redis',
-    //             table: 'BookingBids',
-    //             q: {
-    //                 bid: bid
-    //             }
-    //         })
-    //         if(bookingBid == null || bookingBid.status != 'active') {
-    //             res.status(400).send('ER212');
-    //             return;
-    //         }
-
-
-
-    //         /**
-    //          * TODO: CONVERT BOOKING TO TRIP HERE. THIS FUNCTION IS EXECUTED ONE AT A TIME AND IS THREAD SAFE
-    //          *
-    //          * 1. Create a new trip object
-    //          * 2. Insert the trip object inside Mongo.Trips
-    //          * 3. Update Booking status to trip_started
-    //          * 4. Update BookingBid status to trip_started
-    //          * 5. Send update on all BookingBids.h3is redis pub/sub channels
-    //          */
-
-    //     } catch(err) {
-    //         res.status(500).send('ER500'); //must send back correct status and error code
-    //     }
-    // }).finally(() => {
-    //     release();
-    // })
-
 })
 
 const fetchBooking = (bid) => new Promise(resolve => {

@@ -17,21 +17,27 @@ export const acceptBooking = async (req, res) => {
     let rid = await validateSt(req.headers['authorization'])
     if (rid == null) return res.status(401).send('ER401');
     let bid = req.params.bid;
-    if (bid == null) return res.status(400).send('ER704,bid')
+    if (bid == null) return res.status(400).send('ER704,bid');
+
+    let lat = req.body.lat;
+    let lng = req.body.lng;
+    
+    if (lat == null || lat == '') return res.status(400).send('ER704,lat');
+    if (lng == null || lng == '') return res.status(400).send('ER704,lng');
 
     try {
         let acceptBooking = await post(UNITY_ACCEPT_BOOKING, {
             bid: bid,
             rid: rid,
             riderLoc: {
-                lat: 0.00,
-                lng: 0.00
+                lat: lat,
+                lng: lng
             }
         })
         res.json(acceptBooking);
     } catch (err) {
         console.log(err);
-        if(err == 'ER212') res.status(400).send('ER212');
+        if(err == 'ER212' || err == 'ER213') res.status(400).send(err);
         else res.status(500).send('ER500');
     }
 }
