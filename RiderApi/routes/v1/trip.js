@@ -88,6 +88,7 @@ export const setStatus = async (req, res) => {
 
     const lat = req.body.lat;
     const lng = req.body.lng;
+    const otp = req.body.otp;
 
     //load the trip object, and return error if a trip is not found
     let trips = await post(SCM_DB_FETCH, {
@@ -101,67 +102,270 @@ export const setStatus = async (req, res) => {
     if (trips == null || trips.length == 0) return res.status(400).send('ER704,tid');
     const trip = trips[0];
 
-    let validationError = validateStatusCombination(trip, status, substatus);
-    if (validationError != null) res.status(400).send(validationError);
+    let validationError = validateNewStatus(status, substatus);
+    if (validationError != null) return res.status(400).send(validationError);
 
-    res.send();
+    validationError = validateStatusCombination(trip, status, substatus);
+    if (validationError != null) return res.status(400).send(validationError);
+
+    trip.status = status;
+    trip.substatus = substatus;
+
+    if (status == 'way-to-drop' && substatus == 'routing') {
+        //Pickup OTP needs to be validated
+    } else if (status == 'delivered') {
+        //Delivery OTP needs to be validated
+    } else if (status == 'returned') {
+        //Return OTP needs to be validated
+    } else if (status == 'way-to-pickup' && substatus == 'routing') {
+        //Generate / resend pickup OTP
+    } else if (status == 'way-to-drop' && substatus == 'routing') {
+        //Generate / resend drop OTP
+    } else if (status == 'way-to-return' && substatus == 'routing') {
+        //Generate / resend return OTP
+    }
+
+    res.json({
+        status: status,
+        substatus: substatus
+    })
+};
+
+const validateOtp = (rid, status, otp) => new Promise(async (resolve, reject) => {
+    
+});
+
+/**
+ * Generates and sends an OTP to the either the pickup or drop location
+ * depending on the value of status passed. If an OTP for a particular
+ * status has already been generated, then the same will get resplaced
+ * with a newly generated OTP.
+ * @param {*} tid 
+ * @param {*} status 
+ */
+const generateAndSendOtp = async (tid, status) => {
+    try {
+        let otp = '' + (Math.floor(100000 + Math.random() * 900000));
+        let otpHash = createHash('md5').update(otp).digest('hex');
+        let tripOtp = {
+            tid: tid,
+            status: status,
+            otpHash: otpHash
+        }
+
+        await post(SCM_DB_INSERT, {
+            db: 'redis',
+            table: 'TripOtps',
+            key: `${tid}_${status}`,
+            value: tripOtp,
+            createdAt: Date.now()
+        })
+
+        switch(status) {
+            case 'way-to-pickup': 
+            case 'way-to-return':
+                //send OTP to pickup phone
+                break;
+            case 'way-to-drop':
+                //send OTP to drop phone
+        }
+    } catch (err) {
+        console.log(err);
+    }
 }
 
-export const reachedPickup = async (req, res) => {
-    res.status(500).send('Not yet implemented');
-}
-
-export const pickup = async (req, res) => {
-    res.status(500).send('Not yet implemented');
-}
-
-export const reachedDrop = async (req, res) => {
-    res.status(500).send('Not yet implemented');
-}
-
-export const dropped = async (req, res) => {
-    res.status(500).send('Not yet implemented');
-}
-
-export const reachedOriginDrop = async (req, res) => {
-    res.status(500).send('Not yet implemented');
-}
-
-export const droppedAtOrigin = async (req, res) => {
-    res.status(500).send('Not yet implemented');
+const validateNewStatus = (status, substatus) => {
+    switch (status) {
+        case 'pickup-canceled':
+            switch (substatus) {
+                case 'too-big':
+                case 'restricted-item':
+                case 'insufficient-packaging':
+                case 'pickup-to-far':
+                case 'insufficient-fuel':
+                case 'drop-to-far':
+                case 'pickup-location-embargo':
+                case 'rider-change-of-heart':
+                case 'customer-change-of-heart':
+                case 'rider-not-reachable':
+                case 'pickup-person-not-reachable':
+                case 'other':
+                    return null;
+                default:
+                    return `ER704,substatus`;
+            }
+        case 'drop-canceled':
+            switch (substatus) {
+                case 'package-lost-in-transit':
+                case 'rider-accident':
+                case 'physical-damage':
+                case 'contents-spilled':
+                case 'water-damage':
+                case 'customer-change-of-heart':
+                case 'rider-not-reachable':
+                case 'other':
+                    return null;
+                default:
+                    return `ER704,substatus`;
+            }
+        case 'way-to-pickup':
+            switch (substatus) {
+                case 'routing':
+                case 'arrived-at-pickup':
+                case 'moved-away-from-pickup':
+                    return null;
+                default:
+                    return `ER704,substatus`;
+            }
+        case 'way-to-drop':
+            switch (substatus) {
+                case 'routing':
+                case 'arrived-at-drop':
+                case 'moved-away-from-drop':
+                    return null;
+                default:
+                    return `ER704,substatus`;
+            }
+        case 'way-to-return':
+            switch (substatus) {
+                case 'routing':
+                    return null;
+                default:
+                    return `ER704,substatus`;
+            }
+        case 'delivered':
+            switch (substatus) {
+                case 'all-good':
+                case 'physical-damage':
+                case 'contents-spilled':
+                case 'water-damage':
+                case 'other':
+                    return null;
+                default:
+                    return `ER704,substatus`;
+            }
+        case 'returned':
+            switch (substatus) {
+                case 'rider-change-of-heart':
+                case 'customer-change-of-heart':
+                case 'too-big':
+                case 'restricted-item':
+                case 'insufficient-packaging':
+                case 'drop-to-far':
+                case 'insufficient-fuel':
+                case 'recipient-not-available':
+                case 'recipient-location-embargo':
+                case 'other':
+                    return null;
+                default:
+                    return `ER704,substatus`;
+            }
+        default:
+            return `ER704,status`;
+    }
 }
 
 const validateStatusCombination = (trip, status, substatus) => {
     const cs = trip.status; //current status
     const css = trip.substatus; //current sub-status
 
-    switch (status) {
+    switch (cs) {
         case 'pickup-canceled':
-        case 'drop-canceled':
-            //restricted status change. Do not allow on rider api. Only admin can update to this status
-            return `ER215,${cs}/${css},${status}/${substatus}`;
-        case 'way-to-pickup':
-            if (cs != 'way-to-pickup' || css != 'routing') return `ER215,${cs}/${css},${status}/${substatus}`;
-            switch (substatus) {
-                case 'routing':
-                    //rider had accidentally marked reached pickup location, and wishes to undo the action.
-                    break;
-                case 'arrived-at-pickup':
-                    if (css != 'routing') return `ER215,${cs}/${css},${status}/${substatus}`;
+            switch (status) {
+                case 'pickup-canceled':
+                case 'way-to-pickup':
+                    return null;
+                case 'way-to-drop':
+                case 'drop-canceled':
+                case 'way-to-return':
+                case 'delivered':
+                case 'returned':
+                    return `ER215,${cs}/${css},${status}/${substatus}`;
                 default:
-                    return 'ER704,substatus';
+                    return 'ER704,status';
             }
-            break;
+        case 'drop-canceled':
+            switch (status) {
+                case 'pickup-canceled':
+                case 'way-to-pickup':
+                    return null;
+                case 'way-to-drop':
+                case 'drop-canceled':
+                case 'way-to-return':
+                case 'delivered':
+                case 'returned':
+                    return `ER215,${cs}/${css},${status}/${substatus}`;
+                default:
+                    return 'ER704,status';
+            }
+        case 'way-to-pickup':
+            switch (status) {
+                case 'pickup-canceled':
+                case 'way-to-pickup':
+                case 'way-to-drop':
+                    return null;
+                case 'drop-canceled':
+                case 'way-to-return':
+                case 'delivered':
+                case 'returned':
+                    return `ER215,${cs}/${css},${status}/${substatus}`;
+                default:
+                    return 'ER704,status';
+            }
         case 'way-to-drop':
-            break;
+            switch (status) {
+                case 'way-to-drop':
+                case 'way-to-pickup':
+                case 'way-to-return':
+                case 'drop-canceled':
+                case 'delivered':
+                    return null;
+                case 'pickup-canceled':
+                case 'returned':
+                    return `ER215,${cs}/${css},${status}/${substatus}`;
+                default:
+                    return 'ER704,status';
+            }
         case 'way-to-return':
+            switch (status) {
+                case 'way-to-drop':
+                case 'way-to-return':
+                case 'returned':
+                    return null;
+                case 'delivered':
+                case 'drop-canceled':
+                case 'pickup-canceled':
+                    return `ER215,${cs}/${css},${status}/${substatus}`;
+                default:
+                    return 'ER704,status';
+            }
         case 'delivered':
-            if (cs != 'way-to-drop' || css != 'arrived-at-drop') return `ER215,${cs}/${css},${status}/${substatus}`;
+            switch (status) {
+                case 'way-to-drop':
+                case 'delivered':
+                    return null;
+                case 'way-to-return':
+                case 'drop-canceled':
+                case 'pickup-canceled':
+                case 'returned':
+                    return `ER215,${cs}/${css},${status}/${substatus}`;
+                default:
+                    return 'ER704,status';
+            }
         case 'returned':
-            if (cs != 'way-to-return' || css != 'arrived-at-return') return `ER215,${cs}/${css},${status}/${substatus}`;
+            switch (status) {
+                case 'returned':
+                case 'way-to-return':
+                    return null;
+                case 'way-to-drop':
+                case 'delivered':
+                case 'drop-canceled':
+                case 'pickup-canceled':
+                    return `ER215,${cs}/${css},${status}/${substatus}`;
+                default:
+                    return 'ER704,status';
+            }
         default:
             return `ER704,status`;
     }
-
-    return null; //no error to report. Validation is successful
 }

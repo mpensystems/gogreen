@@ -1,4 +1,4 @@
-# Lets Move Greener
+# GoGreen
 ![Static Badge](https://img.shields.io/badge/Read-Docs-blue)
 ![Docker Pulls](https://img.shields.io/docker/pulls/blobcity/db)
 ![Docker Stars](https://img.shields.io/docker/stars/blobcity/db)
