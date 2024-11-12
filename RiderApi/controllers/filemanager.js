@@ -51,6 +51,9 @@ export const handleKycDocUpload = async (req, res) => {
             case 'user_photo':
                 columnName = 'photo';
                 break;
+            case  'cancelled_cheque':
+                columnName = 'cancelled_cheque';
+                break;
             default:
                 res.status(400).send('ER704,header:doc-type');
                 return;
@@ -119,6 +122,7 @@ export const handleKycDocUpload = async (req, res) => {
         if(result == null || result.length == 0) return res.status(500).send('ER500');
         let updateRow = result[0];
         updateRow[columnName] = fileId;
+        delete updateRow._id;
 
         //update file ID on the rider object
         await post(SCM_DB_UPDATE, {
@@ -145,14 +149,16 @@ export const fetchKycDoc = async (req, res) => {
         return;
     }
 
-    if (rider.photo_id == fileid
+    if (rider.photo_id_front == fileid
+        || rider.photo_id_back == fileid
         || rider.utility_bill == fileid
         || rider.pan_copy == fileid
         || rider.rc_copy_front == fileid
         || rider.rc_copy_back == fileid
         || rider.drivers_license_front == fileid
         || rider.drivers_license_back == fileid
-        || rider.photo == fileid) {
+        || rider.photo == fileid
+        || rider.cancelled_cheque == fileid) {
             if(existsSync(process.env.STORAGE_DIR + 'kyc/' + fileid)) res.download(process.env.STORAGE_DIR + 'kyc/' + fileid);
             else res.status(400).send(`ER707,${fileid}`)
     } else res.status(401).send('ER405');

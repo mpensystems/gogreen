@@ -14,9 +14,9 @@ const kafka = require('../services/kafkaService.js');
 const h3 = require('h3-js');
 const utils = require('../utils.js');
 
-const processUnity = (command) => new Promise((resolve, reject) => {
+const processUnity = (command) => new Promise(async (resolve, reject) => {
     console.log('Entering lock');
-    mutex.acquire().then(async (release) => {
+    // mutex.acquire().then(async (release) => {
         try {
             switch (command.cmd) {
                 case 'bid-step':
@@ -31,10 +31,10 @@ const processUnity = (command) => new Promise((resolve, reject) => {
             console.error(err)
             reject(err);
         } finally {
-            release();
+            // release();
             console.log('Lock released');
         }
-    })
+    // })
 })
 
 const bookingToTrip = (bid, rid, riderLoc) => new Promise(async (resolve, reject) => {

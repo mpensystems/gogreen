@@ -204,6 +204,7 @@ const sanitizeRider = (rider) => {
         vehicle_no: rider.vehicle_no,
         is_electric: rider.is_electric,
         fueled_propulsion: rider.fueled_propulsion,
+        photo: rider.photo,
         kyc_approved: rider.kyc_approved,
         kyc_approvedAt: rider.kyc_approvedAt,
         kyc_error_message: rider.kyc_error_message,

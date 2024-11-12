@@ -5,8 +5,26 @@ export function sendExotelOtp(sendTo, otp) {
 }
 
 export function sendSlackOtp(sendTo, otp) {
+    sendSlackMessage(`Login OTP for ${sendTo} is ${otp}`);
+}
+
+export function sendTripOtpOverSlack(sendTo, tid, status, otp) {
+    switch(status) {
+        case 'way-to-pickup':
+            sendSlackMessage(`Pickup OTP for ${tid} sent to ${sendTo} is ${otp}`);
+            break;
+        case 'way-to-drop':
+            sendSlackMessage(`Drop OTP for ${tid} sent to ${sendTo} is ${otp}`);
+            break;
+        case 'way-to-return':
+            sendSlackMessage(`Return OTP for ${tid} sent to ${sendTo} is ${otp}`);
+            break;
+    }
+}
+
+function sendSlackMessage (text) {
     let data = JSON.stringify({
-        text: `Login OTP for ${sendTo} is ${otp}`
+        text: text
     })
 
     let config = {

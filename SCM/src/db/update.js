@@ -59,6 +59,7 @@ const processMongoQuery = async (query) => new Promise(async (resolve, reject) =
   try {
     const mongoDb = connectToMongo();
     const collection = mongoDb.collection(query.table);
+    // if(_id in query.row) delete query.row._id; //cannot pass _id in update query for mongo
     let result = await collection.updateOne(query.condition, {'$set': query.row}, {upsert: false});
     resolve({updated: true})
   } catch (error) {

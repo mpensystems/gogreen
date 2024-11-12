@@ -17,6 +17,7 @@ import { post, fetchOne } from '../../api.js';
 import { SCM_DB_DELETE, SCM_DB_FETCH, SCM_DB_INSERT, SCM_DB_UPDATE } from '../../urls.js';
 import { validateSt } from '../../utils.js';
 import { response } from 'express';
+import { sendExotelOtp, sendSlackOtp, sendTripOtpOverSlack } from '../../controllers/otpController.js';
 // const moment = require('moment');
 import moment from 'moment'
 
@@ -90,49 +91,93 @@ export const setStatus = async (req, res) => {
     const lng = req.body.lng;
     const otp = req.body.otp;
 
-    //load the trip object, and return error if a trip is not found
-    let trips = await post(SCM_DB_FETCH, {
-        db: 'mongo',
-        table: 'Trips',
-        condition: {
-            tid: tid
+    try {
+        //load the trip object, and return error if a trip is not found
+        let trips = await post(SCM_DB_FETCH, {
+            db: 'mongo',
+            table: 'Trips',
+            condition: {
+                tid: tid
+            }
+        })
+
+        if (trips == null || trips.length == 0) return res.status(400).send('ER704,tid');
+        const trip = trips[0];
+
+        let validationError = validateNewStatus(status, substatus);
+        if (validationError != null) return res.status(400).send(validationError);
+
+        validationError = validateStatusCombination(trip, status, substatus);
+        if (validationError != null) return res.status(400).send(validationError);
+
+        if (status == 'way-to-drop' && substatus == 'routing') {
+            if (otp == null) return res.status(400).send('ER223');
+            await validateAndConsumeOtp(tid, 'way-to-pickup', otp);
+        } else if (status == 'delivered') {
+            if (otp == null) return res.status(400).send('ER223');
+            await validateAndConsumeOtp(tid, 'way-to-drop', otp);
+        } else if (status == 'returned') {
+            if (otp == null) return res.status(400).send('ER223');
+            await validateAndConsumeOtp(tid, 'way-to-return', otp);
         }
-    })
 
-    if (trips == null || trips.length == 0) return res.status(400).send('ER704,tid');
-    const trip = trips[0];
+        if (status == 'way-to-pickup' && substatus == 'arrived-at-pickup') {
+            generateAndSendOtp(trip, 'way-to-pickup');
+        } else if (status == 'way-to-drop' && substatus == 'arrived-at-drop') {
+            generateAndSendOtp(trip, 'way-to-drop');
+        } else if (status == 'way-to-return' && substatus == 'arrived-at-return') {
+            generateAndSendOtp(trip, 'way-to-return');
+        }
 
-    let validationError = validateNewStatus(status, substatus);
-    if (validationError != null) return res.status(400).send(validationError);
+        //if trip status is final, then complete the trip and record a rider payment
+        
 
-    validationError = validateStatusCombination(trip, status, substatus);
-    if (validationError != null) return res.status(400).send(validationError);
+        trip.status = status;
+        trip.substatus = substatus;
 
-    trip.status = status;
-    trip.substatus = substatus;
+        delete trip._id;
+        await post(SCM_DB_UPDATE, {
+            db: 'mongo',
+            table: 'Trips',
+            condition: {
+                tid: tid
+            },
+            row: trip
+        })
 
-    if (status == 'way-to-drop' && substatus == 'routing') {
-        //Pickup OTP needs to be validated
-    } else if (status == 'delivered') {
-        //Delivery OTP needs to be validated
-    } else if (status == 'returned') {
-        //Return OTP needs to be validated
-    } else if (status == 'way-to-pickup' && substatus == 'routing') {
-        //Generate / resend pickup OTP
-    } else if (status == 'way-to-drop' && substatus == 'routing') {
-        //Generate / resend drop OTP
-    } else if (status == 'way-to-return' && substatus == 'routing') {
-        //Generate / resend return OTP
+        let response = {
+            status: status,
+            substatus: substatus
+        }
+
+        res.json(response);
+    } catch (err) {
+        console.error(err);
+        if (err == 'ER223') res.status(400).send('ER223');
+        else res.status(500).send('ER500');
     }
-
-    res.json({
-        status: status,
-        substatus: substatus
-    })
 };
 
-const validateOtp = (rid, status, otp) => new Promise(async (resolve, reject) => {
-    
+const validateAndConsumeOtp = (tid, status, otp) => new Promise(async (resolve, reject) => {
+    let tripOtps = await post(SCM_DB_FETCH, {
+        db: 'redis',
+        table: 'TripOtps',
+        id: `${tid}_${status}`
+    })
+
+    if (tripOtps == null || tripOtps.length == 0) return reject('ER223');
+    let tripOtp = tripOtps[0];
+    let otpHash = createHash('md5').update(otp).digest('hex');
+
+    if (otpHash != tripOtp.otpHash) return reject('ER223');
+
+    await post(SCM_DB_DELETE, {
+        db: 'redis',
+        table: 'TripOtps',
+        id: `${tid}_${status}`
+    })
+
+    resolve();
 });
 
 /**
@@ -143,31 +188,36 @@ const validateOtp = (rid, status, otp) => new Promise(async (resolve, reject) =>
  * @param {*} tid 
  * @param {*} status 
  */
-const generateAndSendOtp = async (tid, status) => {
+const generateAndSendOtp = async (trip, status) => {
     try {
         let otp = '' + (Math.floor(100000 + Math.random() * 900000));
         let otpHash = createHash('md5').update(otp).digest('hex');
         let tripOtp = {
-            tid: tid,
+            tid: trip.tid,
             status: status,
-            otpHash: otpHash
+            otpHash: otpHash,
+            createdAt: Date.now()
         }
 
         await post(SCM_DB_INSERT, {
             db: 'redis',
             table: 'TripOtps',
-            key: `${tid}_${status}`,
-            value: tripOtp,
-            createdAt: Date.now()
+            rows: [
+                {
+                    key: `${trip.tid}_${status}`,
+                    value: tripOtp
+                }
+            ]
         })
 
-        switch(status) {
-            case 'way-to-pickup': 
+        switch (status) {
+            case 'way-to-pickup':
             case 'way-to-return':
-                //send OTP to pickup phone
+                sendTripOtpOverSlack(trip.pickup_mobile, trip.tid, status, otp);
                 break;
             case 'way-to-drop':
-                //send OTP to drop phone
+                sendTripOtpOverSlack(trip.drop_mobile, trip.tid, status, otp);
+                break;
         }
     } catch (err) {
         console.log(err);
@@ -273,8 +323,8 @@ const validateStatusCombination = (trip, status, substatus) => {
         case 'pickup-canceled':
             switch (status) {
                 case 'pickup-canceled':
-                case 'way-to-pickup':
                     return null;
+                case 'way-to-pickup':
                 case 'way-to-drop':
                 case 'drop-canceled':
                 case 'way-to-return':
@@ -286,11 +336,11 @@ const validateStatusCombination = (trip, status, substatus) => {
             }
         case 'drop-canceled':
             switch (status) {
+                case 'drop-canceled':
+                    return null;
                 case 'pickup-canceled':
                 case 'way-to-pickup':
-                    return null;
                 case 'way-to-drop':
-                case 'drop-canceled':
                 case 'way-to-return':
                 case 'delivered':
                 case 'returned':
@@ -341,9 +391,9 @@ const validateStatusCombination = (trip, status, substatus) => {
             }
         case 'delivered':
             switch (status) {
-                case 'way-to-drop':
                 case 'delivered':
                     return null;
+                case 'way-to-drop':
                 case 'way-to-return':
                 case 'drop-canceled':
                 case 'pickup-canceled':
@@ -355,8 +405,8 @@ const validateStatusCombination = (trip, status, substatus) => {
         case 'returned':
             switch (status) {
                 case 'returned':
-                case 'way-to-return':
                     return null;
+                case 'way-to-return':
                 case 'way-to-drop':
                 case 'delivered':
                 case 'drop-canceled':

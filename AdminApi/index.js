@@ -10,6 +10,7 @@ import { pendingKyc, getRiderKyc, approveKyc, rejectKyc, getRejectedKyc, getAppr
 import { getHomePageStats, getActiveRiderLocations } from './routes/v1/home.js';
 import { fetchKycDoc} from './controllers/filemanager.js';
 import { getAllRiders, getRider, getEarningsLedger, getEarningsTotal } from './routes/v1/riders.js';
+import { setStatus } from './routes/v1/trips.js';
 import pkg from 'body-parser';
 const {json} = pkg;
 import {config} from 'dotenv';
@@ -63,6 +64,8 @@ app.use('/v1/riders/:rid/earnings/:aggregation', getEarningsTotal);
 
 app.get('/v1/home/stats', getHomePageStats);
 app.get('/v1/home/active-rider-map', getActiveRiderLocations);
+
+app.use('/v1/trips/:tid/set/:status/:substatus', setStatus);
 
 // app.use('/v1/rider/fetch-kyc', fetchKyc);
 // app.use('/v1/rider/update-kyc', updateKyc);
