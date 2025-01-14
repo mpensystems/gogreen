@@ -17,7 +17,7 @@ pickup_canceled:
     rider_paid: 10%
     customer_pays: 10%
   rider_change_of_heart:
-    rider_paid: _20%
+    rider_paid: -20%
     customer_pays: 0%
   customer_change_of_heart:
     rider_paid: 20%

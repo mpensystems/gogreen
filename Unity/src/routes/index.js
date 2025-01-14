@@ -19,4 +19,6 @@ router.use('/biddingRoutes',biddingRoutes);
 router.use('/scm/add-booking-to-grid', require('../../routes/v1/scm/add-booking-to-grid'));
 router.use('/rider/accept-booking', require('../../routes/v1/rider/accept-booking'));
 
+router.use('/earnings/record-transaction', require('../../routes/v1/common/record-transaction'));
+
 module.exports = router;
