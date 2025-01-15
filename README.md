@@ -23,14 +23,10 @@ backend logic and the core engine to run an eBike hyper local delivery service.
 ## Supporting Repositories
 **[Rider App](https://github.com/mpensystems/gogreen-rider)** ![RiderApp](https://img.shields.io/badge/React%20Native-yellow) Used by riders with eBikes to view and accept bookings and fulfil an order with pickup and delivery of a small package over a short distance. Generally designed for hyper-local delivery for quick-commerce.
 
-**Admin Portal** ![Admin](https://img.shields.io/badge/React-orange) Used to administer and monitor all riders and bookings. In case of brick and morter store, used for manual order creation.
+**[Admin Portal](https://github.com/mpensystems/gogreen-admin)** ![Admin](https://img.shields.io/badge/React-orange) Used to administer and monitor all riders and bookings. In case of brick and morter store, used for manual order creation.
 
 **Trip Tracking** ![WebTracking](https://img.shields.io/badge/React-green) A web based interface, that generates a unique tracking link for each trip. The link can be shared with the end customer
 to track the process of the trip via a web page.
 
 *Note:* Usage of this platform requires either an API based integration with an existing eCommerce storefront, or manual
 order creation via the admin portal in case of a brick-and-mortar store. 
-
-## Getting Started
-
-## Contributing
