@@ -19,7 +19,7 @@ Application stack for launching an eBike hyper local delivery service. This repo
 backend logic and the core engine to run an eBike hyper local delivery service. 
 
 ## Supporting Repositories
-**Rider App** ![RiderApp](https://img.shields.io/badge/React%20Native-yellow) Used by riders with eBikes to view and accept bookings and fulfil an order with pickup and delivery of a small package over a short distance. Generally designed for hyper-local delivery for quick-commerce.
+**[Rider App](https://github.com/mpensystems/gogreen-rider)** ![RiderApp](https://img.shields.io/badge/React%20Native-yellow) Used by riders with eBikes to view and accept bookings and fulfil an order with pickup and delivery of a small package over a short distance. Generally designed for hyper-local delivery for quick-commerce.
 
 **Admin Portal** ![Admin](https://img.shields.io/badge/React-orange) Used to administer and monitor all riders and bookings. In case of brick and morter store, used for manual order creation.
 
